@@ -22,28 +22,31 @@ A searchable repository for frequently used HTML code snippets, featuring AI-pow
 npm run dev
 ```
 
-## How to Generate and Download Build Files
+## How to Generate and Download Static Files (for FTP)
 
-If you need the compiled "production" version of the app to host elsewhere or inspect:
+If you need to host this app on a traditional web server using FTP:
 
-### 1. Generate the Build
+### 1. Generate the Static Build
 Run this command in your terminal:
 ```bash
 npm run build
 ```
-This creates a `.next` directory containing the optimized production application.
+This creates a folder named `out` in the root directory. This folder contains all the static HTML, CSS, and JS files needed for your site.
 
-### 2. Download Files
+### 2. Download the Files
 1. Look at the **File Explorer** on the left side of your screen.
-2. Locate the folder or file you want (e.g., the `.next` folder or the `public` folder).
-3. **Right-click** on the file/folder.
-4. Select **Download** from the context menu. 
+2. Locate the `out` folder (it will appear after the build finishes).
+3. **Right-click** on the `out` folder.
+4. Select **Download** from the context menu. This will download a zip file of your static site.
 
-*Note: If you are looking for a static HTML export, you would need to add `output: 'export'` to your `next.config.ts` and run the build again, which would create an `out` folder.*
+### 3. Upload to FTP
+Upload the **contents** of the `out` folder to the root of your FTP server.
 
-## Production Deployment to Firebase
+*Note: Since static exports do not have a server-side runtime, AI features (Explain, Refactor, Suggest Title) will only work when hosted on a platform that supports Next.js Server Actions (like Firebase App Hosting). The Firestore database features will work everywhere.*
 
-The most efficient way to host this app is through **Firebase App Hosting**.
+## Production Deployment to Firebase (Recommended)
+
+The most efficient way to host this app with all features (including AI) is through **Firebase App Hosting**.
 
 1. **Push to GitHub**: Push this source code to a repository on GitHub.
 2. **Setup App Hosting**: Go to the [Firebase Console](https://console.firebase.com/), select your project (**snippetvault-9a210**), and navigate to **App Hosting**.
