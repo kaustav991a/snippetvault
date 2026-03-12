@@ -88,11 +88,11 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
-    // Calculate available space
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
     const minListWidth = 250
+    // Keep at least 350px for the detail panel
     const maxListWidth = window.innerWidth - sidebarWidth - 350
     
     if (newWidth >= minListWidth && newWidth <= maxListWidth) {
@@ -240,12 +240,15 @@ export default function SnippetVault() {
 
       {/* Main List Area (Resizable) */}
       <main 
-        style={{ width: (isMobile || !showDetail) ? '100%' : `${listWidth}px` }}
+        style={{ 
+          width: isMobile ? '100%' : (showDetail ? `${listWidth}px` : '100%'),
+        }}
         className={cn(
-          "flex flex-col bg-[#F8FAFB] border-r min-w-0 h-full overflow-hidden relative shrink-0",
-          (!isResizing && showDetail) && "transition-all duration-300",
-          (!showDetail && !isMobile) && "flex-1",
-          (!showList && isMobile) && "hidden"
+          "flex flex-col bg-[#F8FAFB] border-r h-full overflow-hidden relative",
+          !isMobile && "shrink-0",
+          (!isResizing && !isMobile) && "transition-all duration-300",
+          (!isMobile && !showDetail) && "flex-1",
+          (isMobile && !showList) && "hidden"
         )}
       >
         <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
@@ -290,9 +293,9 @@ export default function SnippetVault() {
                   )}
                 >
                   <div className="flex justify-between items-center gap-2 mb-1 min-w-0">
-                    <div className="flex-1 overflow-x-auto scrollbar-none py-0.5 min-w-0">
+                    <div className="flex-1 min-w-0 overflow-hidden">
                       <h3 className={cn(
-                        "text-sm font-semibold whitespace-nowrap",
+                        "text-sm font-semibold truncate",
                         selectedId === snippet.id ? "text-primary" : "text-foreground"
                       )}>
                         {snippet.title || "Untitled Snippet"}
@@ -343,7 +346,7 @@ export default function SnippetVault() {
       <section 
         className={cn(
           "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0",
-          !isResizing && "transition-all duration-300",
+          (!isResizing && !isMobile) && "transition-all duration-300",
           !showDetail && "hidden"
         )}
       >
@@ -351,8 +354,8 @@ export default function SnippetVault() {
           <>
             <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
-                  <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap">
+                <div className="flex flex-col min-w-0 overflow-hidden">
+                  <h2 className="text-base md:text-lg font-headline font-semibold text-primary truncate">
                     {selectedSnippet.title}
                   </h2>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
