@@ -149,23 +149,23 @@ export default function SnippetVault() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0",
+          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-20",
           isSidebarOpen ? "w-64" : "w-0 -translate-x-full md:w-16 md:translate-x-0"
         )}
       >
-        <div className="p-4 flex flex-col gap-6 h-full">
-          <div className="flex items-center gap-2 px-1">
+        <div className="p-4 flex flex-col gap-6 h-full overflow-hidden">
+          <div className="flex items-center gap-2 px-1 shrink-0">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
               <FileCode className="h-5 w-5" />
             </div>
-            {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>}
+            {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap overflow-hidden">Vault</span>}
           </div>
 
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-4 overflow-y-auto scrollbar-none">
             <AddSnippetDialog />
           </div>
 
-          <div className="mt-auto space-y-4">
+          <div className="mt-auto space-y-4 shrink-0">
             <Separator />
             <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
               {isSidebarOpen && <span>{snippets.length} snippets stored</span>}
@@ -175,7 +175,7 @@ export default function SnippetVault() {
       </aside>
 
       {/* Main List */}
-      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px] shrink-0 h-full overflow-hidden">
+      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-0 shrink-0 h-full overflow-hidden z-10">
         <header className="p-4 border-b bg-white shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -188,7 +188,7 @@ export default function SnippetVault() {
           </div>
         </header>
 
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
@@ -210,7 +210,7 @@ export default function SnippetVault() {
                   )}
                 >
                   <div className="flex justify-between items-center gap-2 mb-1">
-                    <div className="flex-1 overflow-x-auto scrollbar-none py-0.5">
+                    <div className="flex-1 overflow-x-auto scrollbar-none py-0.5 min-w-0">
                       <h3 className={cn(
                         "text-sm font-semibold whitespace-nowrap",
                         selectedId === snippet.id ? "text-primary" : "text-foreground"
@@ -218,7 +218,7 @@ export default function SnippetVault() {
                         {snippet.title || "Untitled Snippet"}
                       </h3>
                     </div>
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex gap-1 shrink-0 ml-auto">
                       <EditSnippetDialog snippet={snippet} />
                       <Button
                         variant="ghost"
@@ -230,7 +230,7 @@ export default function SnippetVault() {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-code bg-secondary/10 px-1 rounded">
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-code bg-secondary/10 px-1 rounded truncate">
                     {snippet.code?.substring(0, 100)}...
                   </p>
                 </div>
@@ -241,12 +241,12 @@ export default function SnippetVault() {
       </main>
 
       {/* Detail Panel */}
-      <section className="flex-1 flex flex-col bg-white overflow-hidden h-full">
+      <section className="flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0">
         {selectedSnippet ? (
           <>
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
-              <div className="flex flex-col overflow-x-auto scrollbar-none mr-4 flex-1">
-                <h2 className="text-lg font-headline font-semibold text-primary whitespace-nowrap">{selectedSnippet.title}</h2>
+              <div className="flex flex-col overflow-x-auto scrollbar-none mr-4 flex-1 min-w-0">
+                <h2 className="text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">{selectedSnippet.title}</h2>
                 <p className="text-xs text-muted-foreground">
                   Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
@@ -292,7 +292,7 @@ export default function SnippetVault() {
 
               <TabsContent value="code" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1 bg-[#1e1e1e]">
-                  <div className="p-6 w-max min-w-full">
+                  <div className="p-6 w-max min-w-full min-h-full">
                     <pre className="font-code text-sm text-[#d4d4d4] leading-relaxed whitespace-pre font-normal">
                       <code>{selectedSnippet.code}</code>
                     </pre>
