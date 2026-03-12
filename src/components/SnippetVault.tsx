@@ -175,8 +175,8 @@ export default function SnippetVault() {
       </aside>
 
       {/* Main List */}
-      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px] shrink-0">
-        <header className="p-4 border-b bg-white">
+      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px] shrink-0 h-full overflow-hidden">
+        <header className="p-4 border-b bg-white shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
@@ -188,7 +188,7 @@ export default function SnippetVault() {
           </div>
         </header>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 overflow-y-auto">
           <div className="p-2 space-y-1">
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
@@ -241,7 +241,7 @@ export default function SnippetVault() {
       </main>
 
       {/* Detail Panel */}
-      <section className="flex-1 flex flex-col bg-white overflow-hidden">
+      <section className="flex-1 flex flex-col bg-white overflow-hidden h-full">
         {selectedSnippet ? (
           <>
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
@@ -290,9 +290,9 @@ export default function SnippetVault() {
                 </TabsList>
               </div>
 
-              <TabsContent value="code" className="flex-1 m-0 p-0 overflow-hidden outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0">
+              <TabsContent value="code" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1 bg-[#1e1e1e]">
-                  <div className="p-6">
+                  <div className="p-6 w-max min-w-full">
                     <pre className="font-code text-sm text-[#d4d4d4] leading-relaxed whitespace-pre font-normal">
                       <code>{selectedSnippet.code}</code>
                     </pre>
@@ -300,7 +300,7 @@ export default function SnippetVault() {
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="ai" className="flex-1 m-0 p-0 overflow-hidden outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background">
+              <TabsContent value="ai" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background overflow-hidden">
                 <ScrollArea className="flex-1">
                   <div className="p-6 max-w-3xl mx-auto space-y-6">
                     {!explanation && !isExplaining ? (
