@@ -242,7 +242,7 @@ export default function SnippetVault() {
       <main 
         style={{ width: (isMobile || !showDetail) ? '100%' : `${listWidth}px` }}
         className={cn(
-          "flex flex-col bg-[#F8FAFB] border-r min-w-0 h-full overflow-hidden relative z-10 shrink-0",
+          "flex flex-col bg-[#F8FAFB] border-r min-w-0 h-full overflow-hidden relative shrink-0",
           (!isResizing && showDetail) && "transition-all duration-300",
           (!showDetail && !isMobile) && "flex-1",
           (!showList && isMobile) && "hidden"
