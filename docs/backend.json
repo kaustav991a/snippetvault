@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Snippet": {
@@ -27,6 +28,29 @@
         "code",
         "createdAt"
       ]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores basic information about a user.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "photoURL": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "uid",
+        "email"
+      ]
     }
   },
   "auth": {
@@ -35,9 +59,13 @@
     ]
   },
   "firestore": {
-    "/snippets/{snippetId}": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of user profiles."
+    },
+    "/users/{userId}/snippets/{snippetId}": {
       "schema": "Snippet",
-      "description": "Collection of all code snippets."
+      "description": "Private collection of snippets for a specific user."
     }
   }
 }
