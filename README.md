@@ -8,33 +8,47 @@ A searchable repository for frequently used HTML code snippets, featuring AI-pow
 - **AI**: Genkit with Google Gemini
 - **Database**: Firebase Firestore (Project: snippetvault-9a210)
 
-## Getting Started
+## Deployment Guide: Firebase App Hosting (Recommended)
 
-### 1. Configure Environment Variables
-- Open the `.env` file in the root directory.
-- Ensure your Google Gemini API key is set:
-  ```
-  GOOGLE_GENAI_API_KEY=your_api_key_here
-  ```
+Since this app uses **Next.js Server Actions** for AI features, it requires a server-side environment. **Firebase App Hosting** is the easiest way to deploy it.
 
-### 2. Run in Development
+### Step 1: Push to GitHub
+1. Create a new repository on [GitHub](https://github.com/new).
+2. Initialize git in your local project folder:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   ```
+3. Link your local repo to GitHub and push:
+   ```bash
+   git remote add origin <your-github-repo-url>
+   git branch -M main
+   git push -u origin main
+   ```
+
+### Step 2: Connect to Firebase
+1. Go to the [Firebase Console](https://console.firebase.com/).
+2. Select your project: **snippetvault-9a210**.
+3. In the left sidebar, click on **App Hosting**.
+4. Click **Get Started** and connect your GitHub account.
+5. Select the repository you just pushed.
+6. Follow the prompts to create the backend. Firebase will automatically detect Next.js and start the build.
+
+### Step 3: Configure Environment Variables
+1. Once the App Hosting backend is created, go to the **Settings** tab of your App Hosting backend in the Firebase console.
+2. Add a new Environment Variable:
+   - **Key**: `GOOGLE_GENAI_API_KEY`
+   - **Value**: `AIzaSyBL3o4sajWXPSI82lEN-rkZF69zfrRJGGs` (or your preferred Gemini API key).
+3. Trigger a new rollout to apply the changes.
+
+---
+
+## Why FTP/Static Hosting won't work for AI
+This app uses "Server Actions" to communicate with the Gemini AI models. Traditional FTP hosting only serves static HTML/JS files and cannot run the server-side code needed for AI. If you deploy via FTP, the database will work, but the **Explain**, **Refactor**, and **Suggest Title** buttons will fail.
+
+## Development
+To run the app locally:
 ```bash
 npm run dev
 ```
-
-## Deployment
-
-### Why Static Export (FTP) is not recommended
-This application uses **Next.js Server Actions** for its AI features (Explain, Refactor, Suggest Title). Standard FTP hosting (static files) does not support these server-side features. While the database will work, the AI tools will fail.
-
-### Recommended: Firebase App Hosting
-The most efficient way to host this app with all features is through **Firebase App Hosting**, which fully supports Next.js 15 and Server Actions.
-
-1. **Push to GitHub**: Push this source code to a repository on GitHub.
-2. **Setup App Hosting**: Go to the [Firebase Console](https://console.firebase.com/), select your project (**snippetvault-9a210**), and navigate to **App Hosting**.
-3. **Connect Repository**: Connect your GitHub repository. Firebase will automatically build and deploy your app whenever you push changes.
-
-## AI Features
-- **AI Title Suggestion**: Uses Gemini to summarize code into a clean title.
-- **AI Insights**: Generates a natural language breakdown of what the code does.
-- **AI Refactor**: Optimizes snippets for accessibility and modern best practices.
