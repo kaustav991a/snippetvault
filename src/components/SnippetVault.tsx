@@ -331,14 +331,6 @@ export default function SnippetVault() {
           <>
             <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="shrink-0 text-muted-foreground hover:text-primary"
-                  onClick={() => setSelectedId(null)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
                 <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
                   <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
                     {selectedSnippet.title}
@@ -371,6 +363,14 @@ export default function SnippetVault() {
                   {isCopied ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : <Copy className="h-3 w-3 md:h-4 md:w-4" />}
                   <span className="hidden sm:inline">{isCopied ? "Copied" : "Copy"}</span>
                   <span className="sm:hidden text-[10px]">{isCopied ? "Done" : "Copy"}</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 md:h-9 md:w-9 text-muted-foreground hover:text-destructive transition-colors"
+                  onClick={() => setSelectedId(null)}
+                >
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
             </header>
@@ -437,16 +437,6 @@ export default function SnippetVault() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative">
-            {!isMobile && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute top-4 left-4"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-              </Button>
-            )}
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
