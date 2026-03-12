@@ -30,6 +30,7 @@ export default function SnippetVault() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isDetailVisible, setIsDetailVisible] = useState(true)
   
   // Resizing Logic
   const [listWidth, setListWidth] = useState(400)
@@ -87,11 +88,9 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
-    // Sidebar width is fixed at 256px (w-64) when open on desktop
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
-    // Limits: 250px minimum, leave at least 350px for the detail panel
     const minListWidth = 250
     const maxListWidth = window.innerWidth - sidebarWidth - 350
     
@@ -136,6 +135,11 @@ export default function SnippetVault() {
 
     if (selectedId === id) setSelectedId(null)
     toast({ title: "Snippet deleted" })
+  }
+
+  const handleSnippetSelect = (id: string) => {
+    setSelectedId(id)
+    setIsDetailVisible(true)
   }
 
   const handleExplain = async () => {
@@ -186,8 +190,8 @@ export default function SnippetVault() {
 
   if (!mounted) return null
 
-  const showList = !selectedId || !isMobile
-  const showDetail = !!selectedId || !isMobile
+  const showDetail = isDetailVisible && (!!selectedId || !isMobile)
+  const showList = !showDetail || !isMobile
 
   return (
     <div className={cn(
@@ -237,11 +241,11 @@ export default function SnippetVault() {
 
       {/* Main List Area (Resizable) */}
       <main 
-        style={{ width: isMobile ? '100%' : `${listWidth}px` }}
+        style={{ width: (isMobile || !showDetail) ? '100%' : `${listWidth}px` }}
         className={cn(
           "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden relative z-10",
           !isResizing && "transition-all duration-300",
-          !showList && "hidden md:flex"
+          (!showList && isMobile) && "hidden"
         )}
       >
         <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
@@ -279,7 +283,7 @@ export default function SnippetVault() {
               filteredSnippets.map((snippet) => (
                 <div
                   key={snippet.id}
-                  onClick={() => setSelectedId(snippet.id)}
+                  onClick={() => handleSnippetSelect(snippet.id)}
                   className={cn(
                     "group relative p-3 rounded-md cursor-pointer transition-all duration-200 hover:bg-white hover:shadow-sm border border-transparent",
                     selectedId === snippet.id ? "bg-white border-accent shadow-sm" : "hover:border-secondary"
@@ -317,7 +321,7 @@ export default function SnippetVault() {
       </main>
 
       {/* Resize Handle */}
-      {!isMobile && (
+      {!isMobile && showDetail && (
         <div 
           onMouseDown={startResizing}
           className={cn(
@@ -326,7 +330,6 @@ export default function SnippetVault() {
           )}
         >
           <div className="w-[1px] h-full bg-border" />
-          {/* Visible handle circle on hover/drag */}
           <div className={cn(
             "absolute transition-all duration-200 bg-accent rounded-full p-1 shadow-md z-30",
             isResizing ? "opacity-100 scale-110" : "opacity-0 group-hover:opacity-100 scale-100"
@@ -341,7 +344,7 @@ export default function SnippetVault() {
         className={cn(
           "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0",
           !isResizing && "transition-all duration-300",
-          !showDetail && "hidden md:flex"
+          !showDetail && "hidden"
         )}
       >
         {selectedSnippet ? (
@@ -385,7 +388,7 @@ export default function SnippetVault() {
                   variant="ghost" 
                   size="icon" 
                   className="h-8 w-8 md:h-9 md:w-9 text-muted-foreground hover:text-destructive transition-colors"
-                  onClick={() => setSelectedId(null)}
+                  onClick={() => setIsDetailVisible(false)}
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -453,7 +456,15 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB]">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-4 right-4 text-muted-foreground hover:text-destructive"
+              onClick={() => setIsDetailVisible(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
