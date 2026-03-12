@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, deleteDoc, doc } from "firebase/firestore"
+import { collection, deleteDoc, doc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -38,17 +38,23 @@ export default function SnippetVault() {
     setMounted(true)
   }, [])
 
-  // Firebase Query - Global collection
-  const snippetsQuery = useMemoFirebase(() => {
+  // Firebase Query - Simple collection reference to avoid index issues
+  const snippetsCollectionRef = useMemoFirebase(() => {
     if (!db) return null
-    return query(collection(db, "snippets"), orderBy("createdAt", "desc"))
+    return collection(db, "snippets")
   }, [db])
 
-  const { data: snippets = [], loading: snippetsLoading } = useCollection<Snippet>(snippetsQuery)
+  const { data: snippetsData = [], loading: snippetsLoading } = useCollection<Snippet>(snippetsCollectionRef)
+
+  // Sort snippets locally for now to ensure they show up immediately
+  const snippets = useMemo(() => {
+    return [...snippetsData].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+  }, [snippetsData])
 
   const filteredSnippets = useMemo(() => {
     return snippets.filter(s => 
-      s.title.toLowerCase().includes(searchQuery.toLowerCase())
+      s.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.code?.toLowerCase().includes(searchQuery.toLowerCase())
     )
   }, [snippets, searchQuery])
 
@@ -208,7 +214,7 @@ export default function SnippetVault() {
                       "text-sm font-semibold truncate flex-1",
                       selectedId === snippet.id ? "text-primary" : "text-foreground"
                     )}>
-                      {snippet.title}
+                      {snippet.title || "Untitled Snippet"}
                     </h3>
                     <Button
                       variant="ghost"
@@ -220,7 +226,7 @@ export default function SnippetVault() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-code bg-secondary/10 px-1 rounded">
-                    {snippet.code.substring(0, 100)}...
+                    {snippet.code?.substring(0, 100)}...
                   </p>
                 </div>
               ))
@@ -237,7 +243,7 @@ export default function SnippetVault() {
               <div className="flex flex-col">
                 <h2 className="text-lg font-headline font-semibold text-primary">{selectedSnippet.title}</h2>
                 <p className="text-xs text-muted-foreground">
-                  Added {new Date(selectedSnippet.createdAt).toLocaleDateString()}
+                  Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
               </div>
               <div className="flex gap-2">
