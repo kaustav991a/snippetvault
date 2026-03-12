@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, Pencil } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
+import { EditSnippetDialog } from "./EditSnippetDialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -37,7 +38,7 @@ export default function SnippetVault() {
     setMounted(true)
   }, [])
 
-  // Firebase Query - Simple collection reference to avoid index issues
+  // Firebase Query - Simple collection reference
   const snippetsCollectionRef = useMemoFirebase(() => {
     if (!db) return null
     return collection(db, "snippets")
@@ -45,7 +46,7 @@ export default function SnippetVault() {
 
   const { data: snippetsData = [], loading: snippetsLoading } = useCollection<Snippet>(snippetsCollectionRef)
 
-  // Sort snippets locally for now to ensure they show up immediately
+  // Sort snippets locally
   const snippets = useMemo(() => {
     return [...snippetsData].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
   }, [snippetsData])
@@ -157,7 +158,7 @@ export default function SnippetVault() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
               <FileCode className="h-5 w-5" />
             </div>
-            {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl">Vault</span>}
+            {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>}
           </div>
 
           <div className="flex-1 space-y-4">
@@ -215,14 +216,17 @@ export default function SnippetVault() {
                     )}>
                       {snippet.title || "Untitled Snippet"}
                     </h3>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
-                      onClick={(e) => handleDeleteSnippet(snippet.id, e)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <EditSnippetDialog snippet={snippet} />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
+                        onClick={(e) => handleDeleteSnippet(snippet.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-code bg-secondary/10 px-1 rounded">
                     {snippet.code?.substring(0, 100)}...
