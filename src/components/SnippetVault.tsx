@@ -88,6 +88,7 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
+    // Calculate available space
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
@@ -114,8 +115,6 @@ export default function SnippetVault() {
     return () => {
       window.removeEventListener("mousemove", resize)
       window.removeEventListener("mouseup", stopResizing)
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
     }
   }, [isResizing, resize, stopResizing])
 
@@ -243,8 +242,9 @@ export default function SnippetVault() {
       <main 
         style={{ width: (isMobile || !showDetail) ? '100%' : `${listWidth}px` }}
         className={cn(
-          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden relative z-10",
-          !isResizing && "transition-all duration-300",
+          "flex flex-col bg-[#F8FAFB] border-r min-w-0 h-full overflow-hidden relative z-10 shrink-0",
+          (!isResizing && showDetail) && "transition-all duration-300",
+          (!showDetail && !isMobile) && "flex-1",
           (!showList && isMobile) && "hidden"
         )}
       >
@@ -456,7 +456,7 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative min-h-0">
             <Button 
               variant="ghost" 
               size="icon" 
