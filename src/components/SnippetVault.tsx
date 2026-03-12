@@ -272,7 +272,7 @@ export default function SnippetVault() {
         </header>
 
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1 w-full min-w-0">
+          <div className="p-2 space-y-1 w-full min-w-0 block">
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -459,15 +459,7 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative min-h-0">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute top-4 right-4 text-muted-foreground hover:text-destructive"
-              onClick={() => setIsDetailVisible(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] min-h-0">
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
