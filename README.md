@@ -52,3 +52,4 @@ To run the app locally:
 ```bash
 npm run dev
 ```
+# SnippetVault
