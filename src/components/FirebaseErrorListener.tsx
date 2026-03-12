@@ -10,14 +10,13 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handlePermissionError = (error: FirestorePermissionError) => {
+      // We use a toast to notify the user of the permission issue without 
+      // interrupting the application flow with a full-screen error overlay.
       toast({
         variant: 'destructive',
         title: 'Permission Denied',
         description: `You don't have permission to ${error.context.operation} at ${error.context.path}.`,
       });
-      // In a real dev environment, we'd throw this to show the overlay, 
-      // but for this MVP toast is safer.
-      console.error('Firebase Permission Error:', error.context);
     };
 
     errorEmitter.on('permission-error', handlePermissionError);

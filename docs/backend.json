@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Snippet": {
@@ -36,7 +35,7 @@
   "firestore": {
     "/snippets/{snippetId}": {
       "schema": "Snippet",
-      "description": "Global collection of HTML snippets accessible to everyone."
+      "description": "Global collection of HTML snippets accessible to everyone. (Refreshed Security Rules)"
     }
   }
 }
