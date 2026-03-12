@@ -87,11 +87,11 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
-    // Calculate new width relative to the sidebar
-    // Sidebar width is fixed at 256px (w-64)
+    // Sidebar width is fixed at 256px when open
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
+    // Limits: 200px to 60% of viewport
     if (newWidth > 200 && newWidth < window.innerWidth * 0.6) {
       setListWidth(newWidth)
     }
@@ -232,13 +232,14 @@ export default function SnippetVault() {
         </div>
       </aside>
 
-      {/* Main List */}
+      {/* Main List Area (Resizable) */}
       <main 
         style={{ width: isMobile ? '100%' : `${listWidth}px` }}
         className={cn(
-          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden transition-all duration-300",
-          !showList && "hidden md:flex",
-          isSidebarOpen ? "md:relative" : "md:relative"
+          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden",
+          // Disable transition while resizing for smooth interaction
+          !isResizing && "transition-all duration-300",
+          !showList && "hidden md:flex"
         )}
       >
         <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
@@ -317,7 +318,7 @@ export default function SnippetVault() {
         <div 
           onMouseDown={startResizing}
           className={cn(
-            "w-2 h-full cursor-col-resize hover:bg-accent/30 transition-colors z-20 flex items-center justify-center group relative",
+            "w-2 h-full cursor-col-resize hover:bg-accent/30 transition-colors z-20 flex items-center justify-center group relative shrink-0",
             isResizing && "bg-accent/50"
           )}
         >
@@ -334,7 +335,8 @@ export default function SnippetVault() {
       {/* Detail Panel */}
       <section 
         className={cn(
-          "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0 transition-all duration-300",
+          "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0",
+          !isResizing && "transition-all duration-300",
           !showDetail && "hidden md:flex"
         )}
       >
