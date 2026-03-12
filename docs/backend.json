@@ -35,7 +35,7 @@
   "firestore": {
     "/snippets/{snippetId}": {
       "schema": "Snippet",
-      "description": "Global collection of HTML snippets accessible to everyone. (Refreshed Security Rules)"
+      "description": "PUBLIC ACCESS: This collection is open to the public for reading and writing snippets. No authentication required."
     }
   }
 }
