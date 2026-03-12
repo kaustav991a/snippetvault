@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Menu, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, Plus } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Menu, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, Plus, PanelLeftClose, PanelLeft } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -29,7 +29,7 @@ export default function SnippetVault() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // Default closed on mobile, open on desktop via effect
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   
   // AI States
   const [explanation, setExplanation] = useState<string | null>(null)
@@ -38,8 +38,8 @@ export default function SnippetVault() {
 
   useEffect(() => {
     setMounted(true)
-    if (window.innerWidth >= 768) {
-      setIsSidebarOpen(true)
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false)
     }
   }, [])
 
@@ -152,36 +152,31 @@ export default function SnippetVault() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-50 fixed md:relative h-full",
-          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full md:w-16 md:translate-x-0"
+          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-50 fixed md:relative h-full overflow-hidden",
+          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full md:w-0 md:translate-x-0"
         )}
       >
-        <div className="p-4 flex flex-col gap-6 h-full overflow-hidden">
+        <div className="p-4 flex flex-col gap-6 h-full w-64">
           <div className="flex items-center justify-between px-1 shrink-0">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
                 <FileCode className="h-5 w-5" />
               </div>
-              {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>}
+              <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>
             </div>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(false)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto scrollbar-none">
-            {isSidebarOpen ? (
-              <AddSnippetDialog />
-            ) : (
-              <div className="flex justify-center">
-                <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
+            <AddSnippetDialog />
           </div>
 
           <div className="mt-auto space-y-4 shrink-0">
             <Separator />
             <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-              {isSidebarOpen && <span>{snippets.length} snippets</span>}
+              <span>{snippets.length} snippets stored</span>
             </div>
           </div>
         </div>
@@ -198,10 +193,9 @@ export default function SnippetVault() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden"
-            onClick={() => setIsSidebarOpen(true)}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
-            <Menu className="h-5 w-5" />
+            {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
           </Button>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -277,7 +271,7 @@ export default function SnippetVault() {
           <>
             <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                {isMobile && (
+                {isMobile ? (
                   <Button 
                     variant="ghost" 
                     size="icon" 
@@ -286,13 +280,22 @@ export default function SnippetVault() {
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="shrink-0"
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  >
+                    {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
+                  </Button>
                 )}
                 <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
                   <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
                     {selectedSnippet.title}
                   </h2>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
-                    {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
+                    Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
                   </p>
                 </div>
               </div>
@@ -385,6 +388,16 @@ export default function SnippetVault() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB]">
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-4 left-4"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              >
+                {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
+              </Button>
+            )}
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
@@ -397,16 +410,6 @@ export default function SnippetVault() {
           </div>
         )}
       </section>
-
-      {/* Mobile Sidebar Toggle - Only shown when sidebar is closed and we are in list view */}
-      {isMobile && !isSidebarOpen && showList && (
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="fixed bottom-4 left-4 z-40 p-3 bg-primary text-white rounded-full shadow-lg"
-        >
-          <SidebarIcon className="h-5 w-5" />
-        </button>
-      )}
     </div>
   )
 }
