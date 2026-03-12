@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,11 +16,16 @@ interface AddSnippetDialogProps {
 }
 
 export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [code, setCode] = useState("")
   const [isSuggesting, setIsSuggesting] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSuggestTitle = async () => {
     if (!code.trim()) {
@@ -68,13 +73,21 @@ export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
     })
   }
 
+  const triggerButton = (
+    <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-white shadow-md">
+      <Plus className="h-4 w-4" />
+      <span>Add New Snippet</span>
+    </Button>
+  )
+
+  if (!mounted) {
+    return triggerButton
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-white shadow-md">
-          <Plus className="h-4 w-4" />
-          <span>Add New Snippet</span>
-        </Button>
+        {triggerButton}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>

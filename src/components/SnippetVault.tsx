@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 export default function SnippetVault() {
+  const [mounted, setMounted] = useState(false)
   const [snippets, setSnippets] = useState<Snippet[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -19,8 +20,8 @@ export default function SnippetVault() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const { toast } = useToast()
 
-  // Load from local storage
   useEffect(() => {
+    setMounted(true)
     const saved = localStorage.getItem("html_snippet_vault")
     if (saved) {
       try {
@@ -33,8 +34,10 @@ export default function SnippetVault() {
 
   // Save to local storage
   useEffect(() => {
-    localStorage.setItem("html_snippet_vault", JSON.stringify(snippets))
-  }, [snippets])
+    if (mounted) {
+      localStorage.setItem("html_snippet_vault", JSON.stringify(snippets))
+    }
+  }, [snippets, mounted])
 
   const filteredSnippets = useMemo(() => {
     return snippets.filter(s => 
@@ -175,7 +178,9 @@ export default function SnippetVault() {
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
               <div className="flex flex-col">
                 <h2 className="text-lg font-headline font-semibold text-primary">{selectedSnippet.title}</h2>
-                <p className="text-xs text-muted-foreground">Added {new Date(selectedSnippet.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground">
+                  {mounted ? `Added ${new Date(selectedSnippet.createdAt).toLocaleDateString()}` : 'Added ...'}
+                </p>
               </div>
               <Button 
                 onClick={copyToClipboard}
