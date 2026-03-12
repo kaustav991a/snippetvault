@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -149,7 +148,7 @@ export default function SnippetVault() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out",
+          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0",
           isSidebarOpen ? "w-64" : "w-0 -translate-x-full md:w-16 md:translate-x-0"
         )}
       >
@@ -175,7 +174,7 @@ export default function SnippetVault() {
       </aside>
 
       {/* Main List */}
-      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px]">
+      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px] shrink-0">
         <header className="p-4 border-b bg-white">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -236,19 +235,20 @@ export default function SnippetVault() {
       </main>
 
       {/* Detail Panel */}
-      <section className="flex-[2] flex flex-col bg-white overflow-hidden">
+      <section className="flex-1 flex flex-col bg-white overflow-hidden">
         {selectedSnippet ? (
           <>
-            <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm">
-              <div className="flex flex-col">
-                <h2 className="text-lg font-headline font-semibold text-primary">{selectedSnippet.title}</h2>
+            <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
+              <div className="flex flex-col overflow-hidden mr-4">
+                <h2 className="text-lg font-headline font-semibold text-primary truncate">{selectedSnippet.title}</h2>
                 <p className="text-xs text-muted-foreground">
                   Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 <Button 
                   variant="outline"
+                  size="sm"
                   onClick={handleRefactor}
                   disabled={isRefactoring}
                   className="gap-2 border-accent text-accent hover:bg-accent/10"
@@ -257,6 +257,7 @@ export default function SnippetVault() {
                   AI Refactor
                 </Button>
                 <Button 
+                  size="sm"
                   onClick={copyToClipboard}
                   className={cn(
                     "gap-2 transition-all duration-300",
@@ -269,8 +270,8 @@ export default function SnippetVault() {
               </div>
             </header>
             
-            <Tabs defaultValue="code" className="flex-1 flex flex-col">
-              <div className="px-6 border-b bg-secondary/10">
+            <Tabs defaultValue="code" className="flex-1 flex flex-col min-h-0">
+              <div className="px-6 border-b bg-secondary/10 shrink-0">
                 <TabsList className="bg-transparent h-12">
                   <TabsTrigger value="code" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2">
                     <Code2 className="h-4 w-4" />
@@ -283,47 +284,49 @@ export default function SnippetVault() {
                 </TabsList>
               </div>
 
-              <TabsContent value="code" className="flex-1 m-0 p-0 overflow-hidden">
-                <ScrollArea className="h-full bg-[#1e1e1e]">
+              <TabsContent value="code" className="flex-1 m-0 p-0 overflow-hidden outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0">
+                <ScrollArea className="flex-1 bg-[#1e1e1e]">
                   <div className="p-6">
-                    <pre className="font-code text-sm text-[#d4d4d4] leading-relaxed whitespace-pre-wrap break-all">
+                    <pre className="font-code text-sm text-[#d4d4d4] leading-relaxed whitespace-pre font-normal">
                       <code>{selectedSnippet.code}</code>
                     </pre>
                   </div>
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="ai" className="flex-1 m-0 p-6 overflow-hidden bg-background">
-                <div className="max-w-3xl mx-auto space-y-6">
-                  {!explanation && !isExplaining ? (
-                    <div className="text-center py-20 border-2 border-dashed rounded-xl bg-white shadow-sm">
-                      <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-primary">Need an explanation?</h3>
-                      <p className="text-muted-foreground mb-6">Let AI breakdown this code for you.</p>
-                      <Button onClick={handleExplain} className="bg-primary hover:bg-primary/90">
-                        Generate Explanation
-                      </Button>
-                    </div>
-                  ) : isExplaining ? (
-                    <div className="space-y-4 py-10 text-center">
-                      <Loader2 className="h-10 w-10 animate-spin text-accent mx-auto" />
-                      <p className="text-muted-foreground animate-pulse">Analyzing code structure...</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                      <div className="flex items-center gap-2 text-primary font-semibold">
-                        <Wand2 className="h-5 w-5" />
-                        AI Analysis
+              <TabsContent value="ai" className="flex-1 m-0 p-0 overflow-hidden outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background">
+                <ScrollArea className="flex-1">
+                  <div className="p-6 max-w-3xl mx-auto space-y-6">
+                    {!explanation && !isExplaining ? (
+                      <div className="text-center py-20 border-2 border-dashed rounded-xl bg-white shadow-sm">
+                        <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-primary">Need an explanation?</h3>
+                        <p className="text-muted-foreground mb-6">Let AI breakdown this code for you.</p>
+                        <Button onClick={handleExplain} className="bg-primary hover:bg-primary/90">
+                          Generate Explanation
+                        </Button>
                       </div>
-                      <div className="bg-white p-6 rounded-xl border shadow-sm prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
-                        {explanation}
+                    ) : isExplaining ? (
+                      <div className="space-y-4 py-10 text-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-accent mx-auto" />
+                        <p className="text-muted-foreground animate-pulse">Analyzing code structure...</p>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => setExplanation(null)} className="text-muted-foreground">
-                        Clear Analysis
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex items-center gap-2 text-primary font-semibold">
+                          <Wand2 className="h-5 w-5" />
+                          AI Analysis
+                        </div>
+                        <div className="bg-white p-6 rounded-xl border shadow-sm prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
+                          {explanation}
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => setExplanation(null)} className="text-muted-foreground">
+                          Clear Analysis
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           </>
