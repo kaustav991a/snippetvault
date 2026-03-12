@@ -87,12 +87,15 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
-    // Sidebar width is fixed at 256px (w-64) when open
+    // Sidebar width is fixed at 256px (w-64) when open on desktop
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
-    // Limits: 250px to 60% of viewport
-    if (newWidth > 250 && newWidth < window.innerWidth * 0.6) {
+    // Limits: 250px minimum, leave at least 350px for the detail panel
+    const minListWidth = 250
+    const maxListWidth = window.innerWidth - sidebarWidth - 350
+    
+    if (newWidth >= minListWidth && newWidth <= maxListWidth) {
       setListWidth(newWidth)
     }
   }, [isResizing, isSidebarOpen, isMobile])
@@ -323,7 +326,11 @@ export default function SnippetVault() {
           )}
         >
           <div className="w-[1px] h-full bg-border" />
-          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-accent rounded-full p-0.5 shadow-sm">
+          {/* Visible handle circle on hover/drag */}
+          <div className={cn(
+            "absolute transition-all duration-200 bg-accent rounded-full p-1 shadow-md z-30",
+            isResizing ? "opacity-100 scale-110" : "opacity-0 group-hover:opacity-100 scale-100"
+          )}>
             <GripVertical className="h-3 w-3 text-white" />
           </div>
         </div>
