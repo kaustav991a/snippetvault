@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, LogIn, LogOut, User as UserIcon } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { Input } from "@/components/ui/input"
@@ -11,21 +11,17 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { useFirestore, useCollection, useMemoFirebase, useUser, useAuth } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, deleteDoc, doc } from "firebase/firestore"
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { explainSnippet } from "@/ai/flows/ai-explain-snippet"
 import { refactorSnippet } from "@/ai/flows/ai-refactor-snippet"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function SnippetVault() {
   const [mounted, setMounted] = useState(false)
   const db = useFirestore()
-  const auth = useAuth()
-  const { user, loading: userLoading } = useUser()
   const { toast } = useToast()
   
   const [searchQuery, setSearchQuery] = useState("")
@@ -42,11 +38,11 @@ export default function SnippetVault() {
     setMounted(true)
   }, [])
 
-  // Firebase Query - scoped to logged in user
+  // Firebase Query - Global collection
   const snippetsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return query(collection(db, "users", user.uid, "snippets"), orderBy("createdAt", "desc"))
-  }, [db, user])
+    if (!db) return null
+    return query(collection(db, "snippets"), orderBy("createdAt", "desc"))
+  }, [db])
 
   const { data: snippets = [], loading: snippetsLoading } = useCollection<Snippet>(snippetsQuery)
 
@@ -65,28 +61,11 @@ export default function SnippetVault() {
     setExplanation(null)
   }, [selectedId])
 
-  const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider()
-    try {
-      await signInWithPopup(auth, provider)
-    } catch (error) {
-      toast({
-        title: "Sign in failed",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleSignOut = () => {
-    signOut(auth)
-    setSelectedId(null)
-  }
-
   const handleDeleteSnippet = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!db || !user) return
+    if (!db) return
 
-    const docRef = doc(db, "users", user.uid, "snippets", id)
+    const docRef = doc(db, "snippets", id)
     deleteDoc(docRef)
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
@@ -178,26 +157,6 @@ export default function SnippetVault() {
 
           <div className="flex-1 space-y-4">
             <AddSnippetDialog />
-            
-            {user && (
-              <div className="flex flex-col gap-2">
-                <Separator />
-                <div className="flex items-center gap-3 p-2 bg-secondary/10 rounded-lg">
-                  <Avatar className="h-8 w-8 border border-white shadow-sm">
-                    <AvatarImage src={user.photoURL || ""} />
-                    <AvatarFallback><UserIcon className="h-4 w-4" /></AvatarFallback>
-                  </Avatar>
-                  {isSidebarOpen && (
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold truncate">{user.displayName}</span>
-                      <button onClick={handleSignOut} className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1">
-                        <LogOut className="h-3 w-3" /> Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="mt-auto space-y-4">
@@ -219,24 +178,13 @@ export default function SnippetVault() {
               className="pl-9 bg-secondary/20 border-none focus-visible:ring-accent"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              disabled={!user}
             />
           </div>
         </header>
 
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
-            {!user ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-                <LogIn className="h-12 w-12 text-primary/30 mb-4" />
-                <h3 className="font-semibold text-primary">Private Repository</h3>
-                <p className="text-xs text-muted-foreground mb-6">Sign in to access your personal HTML snippets.</p>
-                <Button onClick={handleSignIn} className="gap-2 bg-primary hover:bg-primary/90">
-                  <LogIn className="h-4 w-4" />
-                  Sign In with Google
-                </Button>
-              </div>
-            ) : userLoading || snippetsLoading ? (
+            {snippetsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
@@ -283,7 +231,7 @@ export default function SnippetVault() {
 
       {/* Detail Panel */}
       <section className="flex-[2] flex flex-col bg-white overflow-hidden">
-        {selectedSnippet && user ? (
+        {selectedSnippet ? (
           <>
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm">
               <div className="flex flex-col">
@@ -379,12 +327,10 @@ export default function SnippetVault() {
               <FileCode className="h-10 w-10 text-accent/40" />
             </div>
             <h2 className="text-xl font-headline font-bold text-primary mb-2">
-              {!user ? "Welcome to SnippetVault" : "Select a Snippet"}
+              Welcome to SnippetVault
             </h2>
             <p className="text-muted-foreground max-w-sm">
-              {!user 
-                ? "Sign in to securely store, organize, and analyze your frequently used HTML components." 
-                : "Choose a snippet from the list on the left to view, explain, or refactor its HTML code."}
+              Securely store, organize, and analyze your frequently used HTML components in this public repository.
             </p>
           </div>
         )}

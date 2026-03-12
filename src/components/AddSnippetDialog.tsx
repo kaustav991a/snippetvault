@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Plus, Wand2, Loader2 } from "lucide-react"
 import { suggestSnippetTitle } from "@/ai/flows/ai-suggest-snippet-title"
 import { useToast } from "@/hooks/use-toast"
-import { useFirestore, useUser } from "@/firebase"
+import { useFirestore } from "@/firebase"
 import { collection, addDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -22,7 +22,6 @@ export function AddSnippetDialog() {
   const [code, setCode] = useState("")
   const [isSuggesting, setIsSuggesting] = useState(false)
   const db = useFirestore()
-  const { user } = useUser()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -56,7 +55,7 @@ export function AddSnippetDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !code.trim() || !db || !user) return
+    if (!title.trim() || !code.trim() || !db) return
 
     const snippetData = {
       title,
@@ -64,7 +63,7 @@ export function AddSnippetDialog() {
       createdAt: Date.now(),
     }
 
-    const snippetsRef = collection(db, "users", user.uid, "snippets")
+    const snippetsRef = collection(db, "snippets")
     addDoc(snippetsRef, snippetData)
       .catch(async (err) => {
         const permissionError = new FirestorePermissionError({
@@ -85,7 +84,7 @@ export function AddSnippetDialog() {
   }
 
   const triggerButton = (
-    <Button disabled={!user} className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-white shadow-md">
+    <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-white shadow-md">
       <Plus className="h-4 w-4" />
       <span>Add New Snippet</span>
     </Button>

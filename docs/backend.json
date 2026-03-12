@@ -28,44 +28,15 @@
         "code",
         "createdAt"
       ]
-    },
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Stores basic information about a user.",
-      "type": "object",
-      "properties": {
-        "uid": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "photoURL": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "uid",
-        "email"
-      ]
     }
   },
   "auth": {
-    "providers": [
-      "google.com"
-    ]
+    "providers": []
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": "UserProfile",
-      "description": "Collection of user profiles."
-    },
-    "/users/{userId}/snippets/{snippetId}": {
+    "/snippets/{snippetId}": {
       "schema": "Snippet",
-      "description": "Private collection of snippets for a specific user."
+      "description": "Global collection of HTML snippets accessible to everyone."
     }
   }
 }
