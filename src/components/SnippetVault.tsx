@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical, X } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -334,10 +334,10 @@ export default function SnippetVault() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="shrink-0"
+                  className="shrink-0 text-muted-foreground hover:text-primary"
                   onClick={() => setSelectedId(null)}
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <X className="h-5 w-5" />
                 </Button>
                 <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
                   <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
