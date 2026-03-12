@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Menu, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, Plus, PanelLeftClose, PanelLeft } from "lucide-react"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -31,6 +31,10 @@ export default function SnippetVault() {
   const [isCopied, setIsCopied] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   
+  // Resizing Logic
+  const [listWidth, setListWidth] = useState(400)
+  const [isResizing, setIsResizing] = useState(false)
+
   // AI States
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
@@ -69,6 +73,42 @@ export default function SnippetVault() {
   useEffect(() => {
     setExplanation(null)
   }, [selectedId])
+
+  // Resize Handlers
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }, [])
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  const resize = useCallback((e: MouseEvent) => {
+    if (!isResizing || isMobile) return
+    
+    // Calculate new width relative to the sidebar
+    const sidebarWidth = isSidebarOpen ? 256 : 0
+    const newWidth = e.clientX - sidebarWidth
+    
+    if (newWidth > 250 && newWidth < 800) {
+      setListWidth(newWidth)
+    }
+  }, [isResizing, isSidebarOpen, isMobile])
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", resize)
+      window.addEventListener("mouseup", stopResizing)
+    } else {
+      window.removeEventListener("mousemove", resize)
+      window.removeEventListener("mouseup", stopResizing)
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize)
+      window.removeEventListener("mouseup", stopResizing)
+    }
+  }, [isResizing, resize, stopResizing])
 
   const handleDeleteSnippet = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -140,7 +180,10 @@ export default function SnippetVault() {
   const showDetail = !!selectedId || !isMobile
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-body relative">
+    <div className={cn(
+      "flex h-screen w-full bg-background overflow-hidden font-body relative",
+      isResizing && "cursor-col-resize select-none"
+    )}>
       {/* Sidebar Overlay for Mobile */}
       {isMobile && isSidebarOpen && (
         <div 
@@ -184,9 +227,11 @@ export default function SnippetVault() {
 
       {/* Main List */}
       <main 
+        style={{ width: isMobile ? '100%' : `${listWidth}px` }}
         className={cn(
-          "flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-full md:max-w-md min-w-0 shrink-0 h-full overflow-hidden transition-all duration-300",
-          !showList && "hidden md:flex"
+          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden transition-all duration-300",
+          !showList && "hidden md:flex",
+          isSidebarOpen ? "md:relative" : "md:relative"
         )}
       >
         <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
@@ -259,6 +304,21 @@ export default function SnippetVault() {
           </div>
         </ScrollArea>
       </main>
+
+      {/* Resize Handle */}
+      {!isMobile && (
+        <div 
+          onMouseDown={startResizing}
+          className={cn(
+            "w-1 h-full cursor-col-resize hover:bg-accent/30 transition-colors z-20 flex items-center justify-center group",
+            isResizing && "bg-accent/50"
+          )}
+        >
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent rounded-full p-0.5">
+            <GripVertical className="h-3 w-3 text-white" />
+          </div>
+        </div>
+      )}
 
       {/* Detail Panel */}
       <section 
@@ -387,7 +447,7 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB]">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative">
             {!isMobile && (
               <Button 
                 variant="ghost" 
