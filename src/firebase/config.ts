@@ -1,9 +1,10 @@
 
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCZJSy_IT0xuLxBA1ohwD18wY8bkkLrQnQ",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBL3o4sajWXPSI82lEN-rkZF69zfrRJGGs",
+  authDomain: "snippetvault-9a210.firebaseapp.com",
+  projectId: "snippetvault-9a210",
+  storageBucket: "snippetvault-9a210.firebasestorage.app",
+  messagingSenderId: "781764767319",
+  appId: "1:781764767319:web:3a6afca430a765bb097d12",
+  measurementId: "G-6NFLJZKJVL"
 };
