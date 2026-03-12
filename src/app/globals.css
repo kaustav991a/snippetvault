@@ -67,3 +67,8 @@
     display: none;
   }
 }
+
+/* Force Radix ScrollArea internal wrappers to block to prevent layout expansion */
+[data-radix-scroll-area-viewport] > div {
+  display: block !important;
+}

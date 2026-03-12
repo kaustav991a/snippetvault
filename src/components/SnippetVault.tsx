@@ -30,7 +30,7 @@ export default function SnippetVault() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isDetailVisible, setIsDetailVisible] = useState(true)
+  const [isDetailVisible, setIsDetailVisible] = useState(false)
   
   // Resizing Logic
   const [listWidth, setListWidth] = useState(400)
@@ -92,7 +92,6 @@ export default function SnippetVault() {
     const newWidth = e.clientX - sidebarWidth
     
     const minListWidth = 250
-    // Keep at least 350px for the detail panel
     const maxListWidth = window.innerWidth - sidebarWidth - 350
     
     if (newWidth >= minListWidth && newWidth <= maxListWidth) {
@@ -132,7 +131,10 @@ export default function SnippetVault() {
         errorEmitter.emit('permission-error', permissionError)
       })
 
-    if (selectedId === id) setSelectedId(null)
+    if (selectedId === id) {
+      setSelectedId(null)
+      setIsDetailVisible(false)
+    }
     toast({ title: "Snippet deleted" })
   }
 
@@ -197,7 +199,6 @@ export default function SnippetVault() {
       "flex h-screen w-full bg-background overflow-hidden font-body relative",
       isResizing && "cursor-col-resize select-none"
     )}>
-      {/* Sidebar Overlay for Mobile */}
       {isMobile && isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 transition-opacity"
@@ -205,7 +206,6 @@ export default function SnippetVault() {
         />
       )}
 
-      {/* Sidebar */}
       <aside 
         className={cn(
           "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-50 fixed md:relative h-full overflow-hidden",
@@ -238,16 +238,14 @@ export default function SnippetVault() {
         </div>
       </aside>
 
-      {/* Main List Area (Resizable) */}
       <main 
         style={{ 
           width: isMobile ? '100%' : (showDetail ? `${listWidth}px` : '100%'),
         }}
         className={cn(
           "flex flex-col bg-[#F8FAFB] border-r h-full overflow-hidden relative",
-          !isMobile && "shrink-0",
+          (!isMobile && showDetail) ? "shrink-0" : "flex-1",
           (!isResizing && !isMobile) && "transition-all duration-300",
-          (!isMobile && !showDetail) && "flex-1",
           (isMobile && !showList) && "hidden"
         )}
       >
@@ -272,7 +270,7 @@ export default function SnippetVault() {
         </header>
 
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1 w-full min-w-0 block">
+          <div className="p-2 space-y-1 w-full min-w-0 block" style={{ display: 'block' }}>
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -323,7 +321,6 @@ export default function SnippetVault() {
         </ScrollArea>
       </main>
 
-      {/* Resize Handle */}
       {!isMobile && showDetail && (
         <div 
           onMouseDown={startResizing}
@@ -342,7 +339,6 @@ export default function SnippetVault() {
         </div>
       )}
 
-      {/* Detail Panel */}
       <section 
         className={cn(
           "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0",
@@ -459,7 +455,15 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative min-h-0">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-4 right-4 h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => setIsDetailVisible(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
