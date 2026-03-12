@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -32,7 +31,7 @@ export function AddSnippetDialog() {
     if (!code.trim()) {
       toast({
         title: "No code provided",
-        description: "Please enter some HTML code first to get a title suggestion.",
+        description: "Please enter some code first to get a title suggestion.",
         variant: "destructive",
       })
       return
@@ -129,10 +128,10 @@ export function AddSnippetDialog() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="code" className="text-sm font-medium">HTML Code</Label>
+            <Label htmlFor="code" className="text-sm font-medium">Code Snippet</Label>
             <Textarea
               id="code"
-              placeholder="Paste your HTML here..."
+              placeholder="IT can be HTML/CSS/JS..or can be all in one .."
               className="font-code min-h-[300px] bg-secondary/30 resize-none"
               value={code}
               onChange={(e) => setCode(e.target.value)}
