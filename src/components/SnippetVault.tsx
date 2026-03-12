@@ -42,7 +42,7 @@ export default function SnippetVault() {
 
   useEffect(() => {
     setMounted(true)
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < 1024) {
       setIsSidebarOpen(false)
     }
   }, [])
@@ -87,12 +87,12 @@ export default function SnippetVault() {
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing || isMobile) return
     
-    // Sidebar width is fixed at 256px when open
+    // Sidebar width is fixed at 256px (w-64) when open
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
-    // Limits: 200px to 60% of viewport
-    if (newWidth > 200 && newWidth < window.innerWidth * 0.6) {
+    // Limits: 250px to 60% of viewport
+    if (newWidth > 250 && newWidth < window.innerWidth * 0.6) {
       setListWidth(newWidth)
     }
   }, [isResizing, isSidebarOpen, isMobile])
@@ -236,8 +236,7 @@ export default function SnippetVault() {
       <main 
         style={{ width: isMobile ? '100%' : `${listWidth}px` }}
         className={cn(
-          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden",
-          // Disable transition while resizing for smooth interaction
+          "flex flex-col bg-[#F8FAFB] border-r min-w-0 shrink-0 h-full overflow-hidden relative z-10",
           !isResizing && "transition-all duration-300",
           !showList && "hidden md:flex"
         )}
@@ -246,15 +245,16 @@ export default function SnippetVault() {
           <Button 
             variant="ghost" 
             size="icon" 
+            className="shrink-0"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
             {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
           </Button>
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search snippets..." 
-              className="pl-9 bg-secondary/20 border-none focus-visible:ring-accent"
+              placeholder="Search..." 
+              className="pl-9 bg-secondary/20 border-none focus-visible:ring-accent w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -282,7 +282,7 @@ export default function SnippetVault() {
                     selectedId === snippet.id ? "bg-white border-accent shadow-sm" : "hover:border-secondary"
                   )}
                 >
-                  <div className="flex justify-between items-center gap-2 mb-1">
+                  <div className="flex justify-between items-center gap-2 mb-1 min-w-0">
                     <div className="flex-1 overflow-x-auto scrollbar-none py-0.5 min-w-0">
                       <h3 className={cn(
                         "text-sm font-semibold whitespace-nowrap",
@@ -291,7 +291,7 @@ export default function SnippetVault() {
                         {snippet.title || "Untitled Snippet"}
                       </h3>
                     </div>
-                    <div className="flex gap-1 shrink-0 ml-auto items-center">
+                    <div className="flex gap-1 shrink-0 items-center">
                       <EditSnippetDialog snippet={snippet} />
                       <Button
                         variant="ghost"
@@ -322,10 +322,7 @@ export default function SnippetVault() {
             isResizing && "bg-accent/50"
           )}
         >
-          {/* Subtle visual line */}
           <div className="w-[1px] h-full bg-border" />
-          
-          {/* Grabber handle that appears on hover */}
           <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-accent rounded-full p-0.5 shadow-sm">
             <GripVertical className="h-3 w-3 text-white" />
           </div>
@@ -345,7 +342,7 @@ export default function SnippetVault() {
             <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
-                  <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
+                  <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap">
                     {selectedSnippet.title}
                   </h2>
                   <p className="text-[10px] md:text-xs text-muted-foreground">
@@ -353,7 +350,7 @@ export default function SnippetVault() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 shrink-0 ml-2">
+              <div className="flex gap-2 shrink-0 ml-2 items-center">
                 <Button 
                   variant="outline"
                   size="sm"
@@ -449,7 +446,7 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB] relative">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB]">
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
               <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
