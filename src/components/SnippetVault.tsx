@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, Pencil } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Menu, Sidebar as SidebarIcon, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, Plus } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -18,16 +18,18 @@ import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { explainSnippet } from "@/ai/flows/ai-explain-snippet"
 import { refactorSnippet } from "@/ai/flows/ai-refactor-snippet"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function SnippetVault() {
   const [mounted, setMounted] = useState(false)
+  const isMobile = useIsMobile()
   const db = useFirestore()
   const { toast } = useToast()
   
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // Default closed on mobile, open on desktop via effect
   
   // AI States
   const [explanation, setExplanation] = useState<string | null>(null)
@@ -36,9 +38,12 @@ export default function SnippetVault() {
 
   useEffect(() => {
     setMounted(true)
+    if (window.innerWidth >= 768) {
+      setIsSidebarOpen(true)
+    }
   }, [])
 
-  // Firebase Query - Simple collection reference
+  // Firebase Query
   const snippetsCollectionRef = useMemoFirebase(() => {
     if (!db) return null
     return collection(db, "snippets")
@@ -46,7 +51,6 @@ export default function SnippetVault() {
 
   const { data: snippetsData = [], loading: snippetsLoading } = useCollection<Snippet>(snippetsCollectionRef)
 
-  // Sort snippets locally
   const snippets = useMemo(() => {
     return [...snippetsData].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
   }, [snippetsData])
@@ -62,7 +66,6 @@ export default function SnippetVault() {
     return snippets.find(s => s.id === selectedId) || null
   }, [snippets, selectedId])
 
-  // Reset AI states when snippet changes
   useEffect(() => {
     setExplanation(null)
   }, [selectedId])
@@ -82,9 +85,7 @@ export default function SnippetVault() {
       })
 
     if (selectedId === id) setSelectedId(null)
-    toast({
-      title: "Snippet deleted",
-    })
+    toast({ title: "Snippet deleted" })
   }
 
   const handleExplain = async () => {
@@ -115,10 +116,7 @@ export default function SnippetVault() {
         description: "Optimized code has been copied to your clipboard.",
       })
     } catch (error) {
-      toast({
-        title: "AI Refactor failed",
-        variant: "destructive",
-      })
+      toast({ title: "AI Refactor failed", variant: "destructive" })
     } finally {
       setIsRefactoring(false)
     }
@@ -130,54 +128,82 @@ export default function SnippetVault() {
       await navigator.clipboard.writeText(selectedSnippet.code)
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2000)
-      toast({
-        title: "Copied!",
-        description: "Snippet copied to clipboard.",
-      })
+      toast({ title: "Copied!", description: "Snippet copied to clipboard." })
     } catch (err) {
-      toast({
-        title: "Copy failed",
-        variant: "destructive",
-      })
+      toast({ title: "Copy failed", variant: "destructive" })
     }
   }
 
   if (!mounted) return null
 
+  const showList = !selectedId || !isMobile
+  const showDetail = !!selectedId || !isMobile
+
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-body">
+    <div className="flex h-screen w-full bg-background overflow-hidden font-body relative">
+      {/* Sidebar Overlay for Mobile */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-20",
-          isSidebarOpen ? "w-64" : "w-0 -translate-x-full md:w-16 md:translate-x-0"
+          "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-50 fixed md:relative h-full",
+          isSidebarOpen ? "w-64 translate-x-0" : "w-0 -translate-x-full md:w-16 md:translate-x-0"
         )}
       >
         <div className="p-4 flex flex-col gap-6 h-full overflow-hidden">
-          <div className="flex items-center gap-2 px-1 shrink-0">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
-              <FileCode className="h-5 w-5" />
+          <div className="flex items-center justify-between px-1 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white shrink-0">
+                <FileCode className="h-5 w-5" />
+              </div>
+              {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>}
             </div>
-            {isSidebarOpen && <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap overflow-hidden">Vault</span>}
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto scrollbar-none">
-            <AddSnippetDialog />
+            {isSidebarOpen ? (
+              <AddSnippetDialog />
+            ) : (
+              <div className="flex justify-center">
+                <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="mt-auto space-y-4 shrink-0">
             <Separator />
             <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-              {isSidebarOpen && <span>{snippets.length} snippets stored</span>}
+              {isSidebarOpen && <span>{snippets.length} snippets</span>}
             </div>
           </div>
         </div>
       </aside>
 
       {/* Main List */}
-      <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-0 shrink-0 h-full overflow-hidden z-10">
-        <header className="p-4 border-b bg-white shrink-0">
-          <div className="relative">
+      <main 
+        className={cn(
+          "flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-full md:max-w-md min-w-0 shrink-0 h-full overflow-hidden transition-all duration-300",
+          !showList && "hidden md:flex"
+        )}
+      >
+        <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search snippets..." 
@@ -218,12 +244,12 @@ export default function SnippetVault() {
                         {snippet.title || "Untitled Snippet"}
                       </h3>
                     </div>
-                    <div className="flex gap-1 shrink-0 ml-auto">
+                    <div className="flex gap-1 shrink-0 ml-auto items-center">
                       <EditSnippetDialog snippet={snippet} />
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
+                        className="h-7 w-7 md:opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
                         onClick={(e) => handleDeleteSnippet(snippet.id, e)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -241,15 +267,34 @@ export default function SnippetVault() {
       </main>
 
       {/* Detail Panel */}
-      <section className="flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0">
+      <section 
+        className={cn(
+          "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0 transition-all duration-300",
+          !showDetail && "hidden md:flex"
+        )}
+      >
         {selectedSnippet ? (
           <>
-            <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
-              <div className="flex flex-col overflow-x-auto scrollbar-none mr-4 flex-1 min-w-0">
-                <h2 className="text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">{selectedSnippet.title}</h2>
-                <p className="text-xs text-muted-foreground">
-                  Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
-                </p>
+            <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {isMobile && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="shrink-0"
+                    onClick={() => setSelectedId(null)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                )}
+                <div className="flex flex-col min-w-0 overflow-x-auto scrollbar-none">
+                  <h2 className="text-base md:text-lg font-headline font-semibold text-primary whitespace-nowrap overflow-hidden text-ellipsis">
+                    {selectedSnippet.title}
+                  </h2>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">
+                    {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
+                  </p>
+                </div>
               </div>
               <div className="flex gap-2 shrink-0 ml-2">
                 <Button 
@@ -257,33 +302,35 @@ export default function SnippetVault() {
                   size="sm"
                   onClick={handleRefactor}
                   disabled={isRefactoring}
-                  className="gap-2 border-accent text-accent hover:bg-accent/10"
+                  className="h-8 md:h-9 px-2 md:px-3 gap-1 md:gap-2 border-accent text-accent hover:bg-accent/10"
                 >
-                  {isRefactoring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  AI Refactor
+                  {isRefactoring ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 md:h-4 md:w-4" />}
+                  <span className="hidden sm:inline">AI Refactor</span>
+                  <span className="sm:hidden text-[10px]">Refactor</span>
                 </Button>
                 <Button 
                   size="sm"
                   onClick={copyToClipboard}
                   className={cn(
-                    "gap-2 transition-all duration-300",
+                    "h-8 md:h-9 px-2 md:px-3 gap-1 md:gap-2 transition-all duration-300",
                     isCopied ? "bg-green-600 hover:bg-green-700" : "bg-accent hover:bg-accent/90"
                   )}
                 >
-                  {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  {isCopied ? "Copied" : "Copy Code"}
+                  {isCopied ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : <Copy className="h-3 w-3 md:h-4 md:w-4" />}
+                  <span className="hidden sm:inline">{isCopied ? "Copied" : "Copy"}</span>
+                  <span className="sm:hidden text-[10px]">{isCopied ? "Done" : "Copy"}</span>
                 </Button>
               </div>
             </header>
             
             <Tabs defaultValue="code" className="flex-1 flex flex-col min-h-0">
-              <div className="px-6 border-b bg-secondary/10 shrink-0">
+              <div className="px-4 md:px-6 border-b bg-secondary/10 shrink-0 overflow-x-auto scrollbar-none">
                 <TabsList className="bg-transparent h-12">
-                  <TabsTrigger value="code" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2">
+                  <TabsTrigger value="code" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
                     <Code2 className="h-4 w-4" />
                     Code
                   </TabsTrigger>
-                  <TabsTrigger value="ai" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2">
+                  <TabsTrigger value="ai" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
                     <Wand2 className="h-4 w-4" />
                     AI Insights
                   </TabsTrigger>
@@ -292,8 +339,8 @@ export default function SnippetVault() {
 
               <TabsContent value="code" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1 bg-[#1e1e1e]">
-                  <div className="p-6 w-max min-w-full min-h-full">
-                    <pre className="font-code text-sm text-[#d4d4d4] leading-relaxed whitespace-pre font-normal">
+                  <div className="p-4 md:p-6 w-max min-w-full min-h-full">
+                    <pre className="font-code text-xs md:text-sm text-[#d4d4d4] leading-relaxed whitespace-pre font-normal">
                       <code>{selectedSnippet.code}</code>
                     </pre>
                   </div>
@@ -302,31 +349,31 @@ export default function SnippetVault() {
 
               <TabsContent value="ai" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background overflow-hidden">
                 <ScrollArea className="flex-1">
-                  <div className="p-6 max-w-3xl mx-auto space-y-6">
+                  <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
                     {!explanation && !isExplaining ? (
-                      <div className="text-center py-20 border-2 border-dashed rounded-xl bg-white shadow-sm">
-                        <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-primary">Need an explanation?</h3>
-                        <p className="text-muted-foreground mb-6">Let AI breakdown this code for you.</p>
+                      <div className="text-center py-10 md:py-20 border-2 border-dashed rounded-xl bg-white shadow-sm px-4">
+                        <BookOpen className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <h3 className="text-base md:text-lg font-semibold text-primary">Need an explanation?</h3>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-6">Let AI breakdown this code for you.</p>
                         <Button onClick={handleExplain} className="bg-primary hover:bg-primary/90">
                           Generate Explanation
                         </Button>
                       </div>
                     ) : isExplaining ? (
                       <div className="space-y-4 py-10 text-center">
-                        <Loader2 className="h-10 w-10 animate-spin text-accent mx-auto" />
-                        <p className="text-muted-foreground animate-pulse">Analyzing code structure...</p>
+                        <Loader2 className="h-8 w-8 md:h-10 md:w-10 animate-spin text-accent mx-auto" />
+                        <p className="text-xs md:text-sm text-muted-foreground animate-pulse">Analyzing code structure...</p>
                       </div>
                     ) : (
                       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex items-center gap-2 text-primary font-semibold">
+                        <div className="flex items-center gap-2 text-primary font-semibold text-sm md:text-base">
                           <Wand2 className="h-5 w-5" />
                           AI Analysis
                         </div>
-                        <div className="bg-white p-6 rounded-xl border shadow-sm prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
+                        <div className="bg-white p-4 md:p-6 rounded-xl border shadow-sm prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-xs md:text-sm">
                           {explanation}
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => setExplanation(null)} className="text-muted-foreground">
+                        <Button variant="ghost" size="sm" onClick={() => setExplanation(null)} className="text-muted-foreground text-xs">
                           Clear Analysis
                         </Button>
                       </div>
@@ -337,27 +384,29 @@ export default function SnippetVault() {
             </Tabs>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-[#F8FAFB]">
-            <div className="h-20 w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
-              <FileCode className="h-10 w-10 text-accent/40" />
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 md:p-12 bg-[#F8FAFB]">
+            <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-6">
+              <FileCode className="h-8 w-8 md:h-10 md:w-10 text-accent/40" />
             </div>
-            <h2 className="text-xl font-headline font-bold text-primary mb-2">
+            <h2 className="text-lg md:text-xl font-headline font-bold text-primary mb-2">
               Welcome to SnippetVault
             </h2>
-            <p className="text-muted-foreground max-w-sm">
+            <p className="text-xs md:text-sm text-muted-foreground max-w-sm">
               Securely store, organize, and analyze your frequently used HTML components in this public repository.
             </p>
           </div>
         )}
       </section>
 
-      {/* Sidebar Toggle */}
-      <button 
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed bottom-4 left-4 z-50 p-3 bg-primary text-white rounded-full shadow-lg md:hidden"
-      >
-        <SidebarIcon className="h-5 w-5" />
-      </button>
+      {/* Mobile Sidebar Toggle - Only shown when sidebar is closed and we are in list view */}
+      {isMobile && !isSidebarOpen && showList && (
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed bottom-4 left-4 z-40 p-3 bg-primary text-white rounded-full shadow-lg"
+        >
+          <SidebarIcon className="h-5 w-5" />
+        </button>
+      )}
     </div>
   )
 }
