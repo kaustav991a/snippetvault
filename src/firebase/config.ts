@@ -1,6 +1,6 @@
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBL3o4sajWXPSI82lEN-rkZF69zfrRJGGs",
+  apiKey: "AIzaSyCZJSy_IT0xuLxBA1ohwD18wY8bkkLrQnQ",
   authDomain: "snippetvault-9a210.firebaseapp.com",
   projectId: "snippetvault-9a210",
   storageBucket: "snippetvault-9a210.firebasestorage.app",
