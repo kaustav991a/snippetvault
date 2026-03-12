@@ -272,7 +272,7 @@ export default function SnippetVault() {
         </header>
 
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1">
+          <div className="p-2 space-y-1 w-full min-w-0">
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
