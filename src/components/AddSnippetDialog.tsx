@@ -80,6 +80,7 @@ export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
     </Button>
   )
 
+  // Avoid hydration mismatch by rendering the same thing on server and first client pass
   if (!mounted) {
     return triggerButton
   }
