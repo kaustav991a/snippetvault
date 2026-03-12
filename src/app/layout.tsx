@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'HTML SnippetVault',
@@ -20,7 +21,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background text-foreground min-h-screen overflow-hidden" suppressHydrationWarning>
-        {children}
+        <FirebaseClientProvider>
+          {children}
+        </FirebaseClientProvider>
       </body>
     </html>
   );

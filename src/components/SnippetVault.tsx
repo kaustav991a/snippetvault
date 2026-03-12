@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Sidebar as SidebarIcon, Loader2 } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { Input } from "@/components/ui/input"
@@ -10,53 +10,57 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, deleteDoc, doc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
 export default function SnippetVault() {
   const [mounted, setMounted] = useState(false)
-  const [snippets, setSnippets] = useState<Snippet[]>([])
+  const db = useFirestore()
+  const { toast } = useToast()
+  
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
-    const saved = localStorage.getItem("html_snippet_vault")
-    if (saved) {
-      try {
-        setSnippets(JSON.parse(saved))
-      } catch (e) {
-        console.error("Failed to parse saved snippets")
-      }
-    }
   }, [])
 
-  // Save to local storage
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("html_snippet_vault", JSON.stringify(snippets))
-    }
-  }, [snippets, mounted])
+  // Firebase Query
+  const snippetsQuery = useMemoFirebase(() => {
+    if (!db) return null
+    return query(collection(db, "snippets"), orderBy("createdAt", "desc"))
+  }, [db])
+
+  const { data: snippets = [], loading } = useCollection<Snippet>(snippetsQuery)
 
   const filteredSnippets = useMemo(() => {
     return snippets.filter(s => 
       s.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ).sort((a, b) => b.createdAt - a.createdAt)
+    )
   }, [snippets, searchQuery])
 
   const selectedSnippet = useMemo(() => {
     return snippets.find(s => s.id === selectedId) || null
   }, [snippets, selectedId])
 
-  const handleAddSnippet = (newSnippet: Snippet) => {
-    setSnippets(prev => [newSnippet, ...prev])
-    setSelectedId(newSnippet.id)
-  }
-
   const handleDeleteSnippet = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    setSnippets(prev => prev.filter(s => s.id !== id))
+    if (!db) return
+
+    const docRef = doc(db, "snippets", id)
+    deleteDoc(docRef)
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        })
+        errorEmitter.emit('permission-error', permissionError)
+      })
+
     if (selectedId === id) setSelectedId(null)
     toast({
       title: "Snippet deleted",
@@ -83,9 +87,11 @@ export default function SnippetVault() {
     }
   }
 
+  if (!mounted) return null
+
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden font-body">
-      {/* Sidebar - Panel 1 (Navigation & Actions) */}
+      {/* Sidebar */}
       <aside 
         className={cn(
           "bg-white border-r flex flex-col transition-all duration-300 ease-in-out",
@@ -101,7 +107,7 @@ export default function SnippetVault() {
           </div>
 
           <div className="flex-1 space-y-2">
-            <AddSnippetDialog onAdd={handleAddSnippet} />
+            <AddSnippetDialog />
           </div>
 
           <div className="mt-auto space-y-4">
@@ -113,7 +119,7 @@ export default function SnippetVault() {
         </div>
       </aside>
 
-      {/* Main List - Panel 2 (Search & List) */}
+      {/* Main List */}
       <main className="flex-1 flex flex-col bg-[#F8FAFB] border-r max-w-md min-w-[320px]">
         <header className="p-4 border-b bg-white">
           <div className="relative">
@@ -129,7 +135,11 @@ export default function SnippetVault() {
 
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
-            {filteredSnippets.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredSnippets.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center px-6">
                 <Code2 className="h-12 w-12 text-muted/30 mb-4" />
                 <p className="text-sm font-medium text-muted-foreground">No snippets found</p>
@@ -171,7 +181,7 @@ export default function SnippetVault() {
         </ScrollArea>
       </main>
 
-      {/* Detail Panel - Panel 3 (Code Viewer) */}
+      {/* Detail Panel */}
       <section className="flex-[2] flex flex-col bg-white">
         {selectedSnippet ? (
           <>
@@ -179,7 +189,7 @@ export default function SnippetVault() {
               <div className="flex flex-col">
                 <h2 className="text-lg font-headline font-semibold text-primary">{selectedSnippet.title}</h2>
                 <p className="text-xs text-muted-foreground">
-                  {mounted ? `Added ${new Date(selectedSnippet.createdAt).toLocaleDateString()}` : 'Added ...'}
+                  Added {new Date(selectedSnippet.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <Button 
@@ -214,7 +224,7 @@ export default function SnippetVault() {
         )}
       </section>
 
-      {/* Sidebar Toggle for Mobile/Minimal View */}
+      {/* Sidebar Toggle */}
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="fixed bottom-4 left-4 z-50 p-3 bg-primary text-white rounded-full shadow-lg md:hidden"

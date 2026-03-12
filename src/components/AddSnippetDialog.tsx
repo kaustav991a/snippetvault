@@ -9,18 +9,18 @@ import { Label } from "@/components/ui/label"
 import { Plus, Wand2, Loader2 } from "lucide-react"
 import { suggestSnippetTitle } from "@/ai/flows/ai-suggest-snippet-title"
 import { useToast } from "@/hooks/use-toast"
-import { Snippet } from "@/lib/types"
+import { useFirestore } from "@/firebase"
+import { collection, addDoc } from "firebase/firestore"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
 
-interface AddSnippetDialogProps {
-  onAdd: (snippet: Snippet) => void
-}
-
-export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
+export function AddSnippetDialog() {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [code, setCode] = useState("")
   const [isSuggesting, setIsSuggesting] = useState(false)
+  const db = useFirestore()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -54,16 +54,25 @@ export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !code.trim()) return
+    if (!title.trim() || !code.trim() || !db) return
 
-    const newSnippet: Snippet = {
-      id: crypto.randomUUID(),
+    const snippetData = {
       title,
       code,
       createdAt: Date.now(),
     }
 
-    onAdd(newSnippet)
+    const snippetsRef = collection(db, "snippets")
+    addDoc(snippetsRef, snippetData)
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: snippetsRef.path,
+          operation: 'create',
+          requestResourceData: snippetData
+        })
+        errorEmitter.emit('permission-error', permissionError)
+      })
+
     setTitle("")
     setCode("")
     setOpen(false)
@@ -80,7 +89,6 @@ export function AddSnippetDialog({ onAdd }: AddSnippetDialogProps) {
     </Button>
   )
 
-  // Avoid hydration mismatch by rendering the same thing on server and first client pass
   if (!mounted) {
     return triggerButton
   }

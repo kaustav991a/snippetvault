@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Snippet": {
+      "title": "Snippet",
+      "description": "An HTML code snippet stored in the vault.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the snippet."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or description of the snippet."
+        },
+        "code": {
+          "type": "string",
+          "description": "The actual HTML code content."
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp when the snippet was created."
+        }
+      },
+      "required": [
+        "title",
+        "code",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "google.com"
+    ]
+  },
+  "firestore": {
+    "/snippets/{snippetId}": {
+      "schema": "Snippet",
+      "description": "Collection of all code snippets."
+    }
+  }
+}
