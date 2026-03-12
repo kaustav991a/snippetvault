@@ -209,14 +209,16 @@ export default function SnippetVault() {
                     selectedId === snippet.id ? "bg-white border-accent shadow-sm" : "hover:border-secondary"
                   )}
                 >
-                  <div className="flex justify-between items-start gap-2">
-                    <h3 className={cn(
-                      "text-sm font-semibold truncate flex-1",
-                      selectedId === snippet.id ? "text-primary" : "text-foreground"
-                    )}>
-                      {snippet.title || "Untitled Snippet"}
-                    </h3>
-                    <div className="flex gap-1">
+                  <div className="flex justify-between items-center gap-2 mb-1">
+                    <div className="flex-1 overflow-x-auto scrollbar-none py-0.5">
+                      <h3 className={cn(
+                        "text-sm font-semibold whitespace-nowrap",
+                        selectedId === snippet.id ? "text-primary" : "text-foreground"
+                      )}>
+                        {snippet.title || "Untitled Snippet"}
+                      </h3>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
                       <EditSnippetDialog snippet={snippet} />
                       <Button
                         variant="ghost"
@@ -243,13 +245,13 @@ export default function SnippetVault() {
         {selectedSnippet ? (
           <>
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
-              <div className="flex flex-col overflow-hidden mr-4">
-                <h2 className="text-lg font-headline font-semibold text-primary truncate">{selectedSnippet.title}</h2>
+              <div className="flex flex-col overflow-x-auto scrollbar-none mr-4 flex-1">
+                <h2 className="text-lg font-headline font-semibold text-primary whitespace-nowrap">{selectedSnippet.title}</h2>
                 <p className="text-xs text-muted-foreground">
                   Added {selectedSnippet.createdAt ? new Date(selectedSnippet.createdAt).toLocaleDateString() : 'Recently'}
                 </p>
               </div>
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 ml-2">
                 <Button 
                   variant="outline"
                   size="sm"
