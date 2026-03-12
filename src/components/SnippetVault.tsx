@@ -88,10 +88,11 @@ export default function SnippetVault() {
     if (!isResizing || isMobile) return
     
     // Calculate new width relative to the sidebar
+    // Sidebar width is fixed at 256px (w-64)
     const sidebarWidth = isSidebarOpen ? 256 : 0
     const newWidth = e.clientX - sidebarWidth
     
-    if (newWidth > 250 && newWidth < 800) {
+    if (newWidth > 200 && newWidth < window.innerWidth * 0.6) {
       setListWidth(newWidth)
     }
   }, [isResizing, isSidebarOpen, isMobile])
@@ -100,13 +101,19 @@ export default function SnippetVault() {
     if (isResizing) {
       window.addEventListener("mousemove", resize)
       window.addEventListener("mouseup", stopResizing)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
     } else {
       window.removeEventListener("mousemove", resize)
       window.removeEventListener("mouseup", stopResizing)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
     return () => {
       window.removeEventListener("mousemove", resize)
       window.removeEventListener("mouseup", stopResizing)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
   }, [isResizing, resize, stopResizing])
 
@@ -310,11 +317,15 @@ export default function SnippetVault() {
         <div 
           onMouseDown={startResizing}
           className={cn(
-            "w-1 h-full cursor-col-resize hover:bg-accent/30 transition-colors z-20 flex items-center justify-center group",
+            "w-2 h-full cursor-col-resize hover:bg-accent/30 transition-colors z-20 flex items-center justify-center group relative",
             isResizing && "bg-accent/50"
           )}
         >
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent rounded-full p-0.5">
+          {/* Subtle visual line */}
+          <div className="w-[1px] h-full bg-border" />
+          
+          {/* Grabber handle that appears on hover */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-accent rounded-full p-0.5 shadow-sm">
             <GripVertical className="h-3 w-3 text-white" />
           </div>
         </div>
