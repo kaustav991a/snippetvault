@@ -28,6 +28,7 @@ const getPreviewDoc = (code: string) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -168,6 +169,9 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="edit" className="flex-1 mt-4">
+              <div className="text-xs text-muted-foreground mb-2">
+                Tip: Ensure CSS is in &lt;style&gt; and JS in &lt;script&gt; tags.
+              </div>
               <Textarea
                 id="edit-code"
                 placeholder="Paste your HTML here..."
@@ -182,7 +186,7 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
                 srcDoc={getPreviewDoc(code)}
                 className="w-full h-full border-none"
                 title="Preview"
-                sandbox="allow-scripts"
+                sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
               />
             </TabsContent>
           </Tabs>

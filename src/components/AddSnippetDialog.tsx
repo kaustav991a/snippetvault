@@ -15,6 +15,9 @@ import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+/**
+ * Helper to wrap raw snippet code in a basic HTML boilerplate for better previewing.
+ */
 const getPreviewDoc = (code: string) => {
   if (!code) return "";
   const lowerCode = code.toLowerCase();
@@ -27,6 +30,7 @@ const getPreviewDoc = (code: string) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -169,6 +173,9 @@ export function AddSnippetDialog() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="edit" className="flex-1 mt-4">
+              <div className="text-xs text-muted-foreground mb-2">
+                Tip: Use &lt;style&gt; for CSS and &lt;script&gt; for JS. Or use AI Refactor.
+              </div>
               <Textarea
                 id="code"
                 placeholder="Paste your HTML/CSS/JS code here..."
@@ -183,7 +190,7 @@ export function AddSnippetDialog() {
                 srcDoc={getPreviewDoc(code)}
                 className="w-full h-full border-none"
                 title="Preview"
-                sandbox="allow-scripts"
+                sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
               />
             </TabsContent>
           </Tabs>

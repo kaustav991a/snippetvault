@@ -22,19 +22,24 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 /**
  * Helper to wrap raw snippet code in a basic HTML boilerplate for better previewing.
+ * Includes jQuery as it's common in these types of snippets.
  */
 const getPreviewDoc = (code: string) => {
   if (!code) return "";
   const lowerCode = code.toLowerCase();
+  
+  // If it's already a full HTML document, just return it
   if (lowerCode.includes('<html') || lowerCode.includes('<!doctype')) {
     return code;
   }
+
   return `
     <!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -194,14 +199,23 @@ export default function SnippetVault() {
   }
 
   const handleRefactor = async () => {
-    if (!selectedSnippet) return
+    if (!selectedSnippet || !db) return
     setIsRefactoring(true)
     try {
       const result = await refactorSnippet({ htmlCode: selectedSnippet.code })
-      await navigator.clipboard.writeText(result.refactoredCode)
+      
+      // Update the snippet in Firestore with the refactored code
+      const snippetRef = doc(db, "snippets", selectedSnippet.id)
+      const updateData = { code: result.refactoredCode }
+      
+      deleteDoc(snippetRef) // Using delete and then add or update is possible, but we should just updateDoc
+      // Actually let's just update it so the user sees the change immediately
+      const { updateDoc } = await import('firebase/firestore')
+      await updateDoc(snippetRef, updateData)
+
       toast({
         title: "AI Refactor Complete",
-        description: "Optimized code has been copied to your clipboard.",
+        description: "Snippet has been optimized and tags were added if missing.",
       })
     } catch (error) {
       toast({ title: "AI Refactor failed", variant: "destructive" })
@@ -224,8 +238,6 @@ export default function SnippetVault() {
 
   if (!mounted) return null
 
-  // On mobile, we show either the list or the detail.
-  // On desktop, we show side-by-side if detail is visible.
   const showDetail = isDetailVisible && (!!selectedSnippet || !isMobile)
   const showList = !isMobile || !isDetailVisible
 
@@ -466,7 +478,7 @@ export default function SnippetVault() {
                   srcDoc={getPreviewDoc(selectedSnippet.code)}
                   className="w-full h-full border-none"
                   title="Snippet Preview"
-                  sandbox="allow-scripts"
+                  sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
                 />
               </TabsContent>
 

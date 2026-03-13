@@ -37,12 +37,17 @@ const refactorSnippetPrompt = ai.definePrompt({
   output: { schema: RefactorSnippetOutputSchema },
   prompt: `You are a senior frontend engineer specialized in clean, accessible, and performant HTML.
 
-Refactor the following HTML code snippet. Focus on:
-1. Improving accessibility (semantic tags, ARIA roles).
-2. Cleanliness and indentation.
-3. Modern best practices.
+Refactor the following code block. It may contain a mix of HTML, CSS, and JavaScript.
 
-HTML Code:
+CRITICAL INSTRUCTIONS:
+1. If CSS is present without <style> tags, wrap it in <style> tags.
+2. If JavaScript is present without <script> tags, wrap it in <script> tags.
+3. Ensure the result is a valid, self-contained HTML component.
+4. Improve accessibility (semantic tags, ARIA roles).
+5. Clean up indentation and formatting.
+6. Use modern best practices.
+
+Input Code:
 ---
 {{{htmlCode}}}
 ---
