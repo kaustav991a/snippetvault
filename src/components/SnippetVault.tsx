@@ -154,7 +154,6 @@ export default function SnippetVault() {
     if (!selectedSnippet) return
     setIsExplaining(true)
     try {
-      // Analyze active file or all files combined
       const codeToAnalyze = selectedSnippet.files.map(f => `File: ${f.name}\n${f.content}`).join('\n\n')
       const result = await explainSnippet({ htmlCode: codeToAnalyze })
       setExplanation(result.explanation)
@@ -344,7 +343,15 @@ export default function SnippetVault() {
                     language={selectedSnippet.files[activeFileIndex]?.language || 'javascript'}
                     style={vscDarkPlus}
                     wrapLongLines={true}
-                    customStyle={{ margin: 0, padding: '1.5rem', fontSize: '13px', lineHeight: '1.6', background: 'transparent' }}
+                    customStyle={{ 
+                      margin: 0, 
+                      padding: '1.5rem', 
+                      fontSize: '13px', 
+                      lineHeight: '1.6', 
+                      background: 'transparent',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word'
+                    }}
                   >
                     {selectedSnippet.files[activeFileIndex]?.content || ''}
                   </SyntaxHighlighter>
@@ -357,7 +364,7 @@ export default function SnippetVault() {
                     {!explanation && !isExplaining ? (
                       <div className="text-center py-20 border-2 border-dashed rounded-xl">
                         <BookOpen className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-primary">AI Explanation</h3>
+                        <h3 className="text-lg font-semibold text-primary">AI Analysis</h3>
                         <Button onClick={handleExplain} className="mt-4 bg-primary">Generate Explanation</Button>
                       </div>
                     ) : isExplaining ? (
