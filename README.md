@@ -1,4 +1,3 @@
-
 # HTML SnippetVault
 
 A searchable repository for frequently used HTML code snippets, featuring AI-powered title suggestions, explanations, and refactoring.
@@ -36,7 +35,6 @@ Since this app uses **Next.js Server Actions** for AI features, it requires a se
 2. Select your project: **snippetvault-9a210**.
 3. In the left sidebar, click on **App Hosting**.
 4. Click **Get Started** and connect your GitHub account.
-5. Select the repository you just pushed.
 
 ### Step 3: Configure Environment Variables (CRITICAL)
 1. In the Firebase console, go to the **Settings** tab of your App Hosting backend.
