@@ -15,6 +15,34 @@ import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+const getPreviewDoc = (code: string) => {
+  if (!code) return "";
+  const lowerCode = code.toLowerCase();
+  if (lowerCode.includes('<html') || lowerCode.includes('<!doctype')) {
+    return code;
+  }
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 1rem; 
+            background-color: white; 
+          }
+        </style>
+      </head>
+      <body>
+        ${code}
+      </body>
+    </html>
+  `;
+};
+
 export function AddSnippetDialog() {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
@@ -152,7 +180,7 @@ export function AddSnippetDialog() {
             </TabsContent>
             <TabsContent value="preview" className="flex-1 mt-4 border rounded-md overflow-hidden bg-white">
               <iframe
-                srcDoc={code || "<p class='p-4 text-muted-foreground italic text-center'>Start typing code to see a preview...</p>"}
+                srcDoc={getPreviewDoc(code)}
                 className="w-full h-full border-none"
                 title="Preview"
                 sandbox="allow-scripts"

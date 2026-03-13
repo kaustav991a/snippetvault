@@ -20,6 +20,39 @@ import { explainSnippet } from "@/ai/flows/ai-explain-snippet"
 import { refactorSnippet } from "@/ai/flows/ai-refactor-snippet"
 import { useIsMobile } from "@/hooks/use-mobile"
 
+/**
+ * Helper to wrap raw snippet code in a basic HTML boilerplate for better previewing.
+ */
+const getPreviewDoc = (code: string) => {
+  if (!code) return "";
+  const lowerCode = code.toLowerCase();
+  if (lowerCode.includes('<html') || lowerCode.includes('<!doctype')) {
+    return code;
+  }
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 1.5rem; 
+            background-color: white; 
+            color: #1a1a1a;
+            line-height: 1.5;
+          }
+        </style>
+      </head>
+      <body>
+        ${code}
+      </body>
+    </html>
+  `;
+};
+
 export default function SnippetVault() {
   const [mounted, setMounted] = useState(false)
   const isMobile = useIsMobile()
@@ -30,7 +63,7 @@ export default function SnippetVault() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isDetailVisible, setIsDetailVisible] = useState(false)
+  const [isDetailVisible, setIsDetailVisible] = useState(true)
   
   // Resizing Logic
   const [listWidth, setListWidth] = useState(400)
@@ -92,6 +125,7 @@ export default function SnippetVault() {
     const newWidth = e.clientX - sidebarWidth
     
     const minListWidth = 250
+    // Ensure detail panel has at least 350px
     const maxListWidth = window.innerWidth - sidebarWidth - 350
     
     if (newWidth >= minListWidth && newWidth <= maxListWidth) {
@@ -133,7 +167,6 @@ export default function SnippetVault() {
 
     if (selectedId === id) {
       setSelectedId(null)
-      setIsDetailVisible(false)
     }
     toast({ title: "Snippet deleted" })
   }
@@ -191,8 +224,10 @@ export default function SnippetVault() {
 
   if (!mounted) return null
 
-  const showDetail = isDetailVisible && (!!selectedId || !isMobile)
-  const showList = !showDetail || !isMobile
+  // On mobile, we show either the list or the detail.
+  // On desktop, we show side-by-side if detail is visible.
+  const showDetail = isDetailVisible && (!!selectedSnippet || !isMobile)
+  const showList = !isMobile || !isDetailVisible
 
   return (
     <div className={cn(
@@ -206,6 +241,7 @@ export default function SnippetVault() {
         />
       )}
 
+      {/* Navigation Sidebar */}
       <aside 
         className={cn(
           "bg-white border-r flex flex-col transition-all duration-300 ease-in-out shrink-0 z-50 fixed md:relative h-full overflow-hidden",
@@ -238,15 +274,16 @@ export default function SnippetVault() {
         </div>
       </aside>
 
+      {/* Snippet Listing Area */}
       <main 
         style={{ 
-          width: isMobile ? '100%' : (showDetail ? `${listWidth}px` : '100%'),
+          width: (!isMobile && showDetail) ? `${listWidth}px` : undefined,
         }}
         className={cn(
           "flex flex-col bg-[#F8FAFB] border-r h-full overflow-hidden relative",
           (!isMobile && showDetail) ? "shrink-0" : "flex-1",
           (!isResizing && !isMobile) && "transition-all duration-300",
-          (isMobile && !showList) && "hidden"
+          (!showList) && "hidden md:flex"
         )}
       >
         <header className="p-4 border-b bg-white shrink-0 flex items-center gap-3">
@@ -261,7 +298,7 @@ export default function SnippetVault() {
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search..." 
+              placeholder="Search snippets..." 
               className="pl-9 bg-secondary/20 border-none focus-visible:ring-accent w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -270,7 +307,7 @@ export default function SnippetVault() {
         </header>
 
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1 w-full min-w-0 block" style={{ display: 'block' }}>
+          <div className="p-2 space-y-1 w-full min-w-0 block">
             {snippetsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -304,7 +341,7 @@ export default function SnippetVault() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 md:opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
                         onClick={(e) => handleDeleteSnippet(snippet.id, e)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -321,6 +358,7 @@ export default function SnippetVault() {
         </ScrollArea>
       </main>
 
+      {/* Resize Handle (Desktop Only) */}
       {!isMobile && showDetail && (
         <div 
           onMouseDown={startResizing}
@@ -339,16 +377,17 @@ export default function SnippetVault() {
         </div>
       )}
 
+      {/* Detail / Code Panel Area */}
       <section 
         className={cn(
-          "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0",
+          "flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0 relative z-10",
           (!isResizing && !isMobile) && "transition-all duration-300",
-          !showDetail && "hidden"
+          (!showDetail) && "hidden md:flex"
         )}
       >
         {selectedSnippet ? (
           <>
-            <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10 shadow-sm shrink-0">
+            <header className="px-4 md:px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-20 shadow-sm shrink-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="flex flex-col min-w-0 overflow-hidden">
                   <h2 className="text-base md:text-lg font-headline font-semibold text-primary truncate">
@@ -424,7 +463,7 @@ export default function SnippetVault() {
 
               <TabsContent value="preview" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden bg-white">
                 <iframe
-                  srcDoc={selectedSnippet.code}
+                  srcDoc={getPreviewDoc(selectedSnippet.code)}
                   className="w-full h-full border-none"
                   title="Snippet Preview"
                   sandbox="allow-scripts"

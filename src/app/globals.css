@@ -68,7 +68,15 @@
   }
 }
 
-/* Force Radix ScrollArea internal wrappers to block to prevent layout expansion */
+/* 
+  CRITICAL: Force Radix ScrollArea internal wrappers to block.
+  Radix uses display: table by default which causes layout expansion 
+  beyond fixed-width containers. This ensures panels shrink correctly.
+*/
+[data-radix-scroll-area-viewport] {
+  display: block !important;
+}
+
 [data-radix-scroll-area-viewport] > div {
   display: block !important;
 }
