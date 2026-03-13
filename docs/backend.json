@@ -3,7 +3,7 @@
   "entities": {
     "Snippet": {
       "title": "Snippet",
-      "description": "An HTML code snippet stored in the vault.",
+      "description": "An HTML code snippet stored in the vault, potentially containing multiple files and tags.",
       "type": "object",
       "properties": {
         "id": {
@@ -14,9 +14,22 @@
           "type": "string",
           "description": "The title or description of the snippet."
         },
-        "code": {
-          "type": "string",
-          "description": "The actual HTML code content."
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of tags for categorization."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "content": { "type": "string" },
+              "language": { "type": "string" }
+            }
+          },
+          "description": "A collection of files belonging to this snippet."
         },
         "createdAt": {
           "type": "number",
@@ -25,7 +38,7 @@
       },
       "required": [
         "title",
-        "code",
+        "files",
         "createdAt"
       ]
     }

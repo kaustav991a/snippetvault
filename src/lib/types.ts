@@ -1,6 +1,14 @@
+
+export interface SnippetFile {
+  name: string;
+  content: string;
+  language: string;
+}
+
 export interface Snippet {
   id: string;
   title: string;
-  code: string;
+  tags?: string[];
+  files: SnippetFile[];
   createdAt: number;
 }
