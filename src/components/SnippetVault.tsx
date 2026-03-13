@@ -343,6 +343,7 @@ export default function SnippetVault() {
                   <SyntaxHighlighter
                     language={selectedSnippet.files[activeFileIndex]?.language || 'javascript'}
                     style={vscDarkPlus}
+                    wrapLongLines={true}
                     customStyle={{ margin: 0, padding: '1.5rem', fontSize: '13px', lineHeight: '1.6', background: 'transparent' }}
                   >
                     {selectedSnippet.files[activeFileIndex]?.content || ''}
