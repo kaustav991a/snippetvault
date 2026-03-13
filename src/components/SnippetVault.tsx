@@ -290,7 +290,7 @@ export default function SnippetVault() {
         </div>
       )}
 
-      <section className={cn("flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0 relative z-10", (!isResizing && !isMobile) && "transition-all duration-300", (!showDetail) && "hidden md:flex")}>
+      <section className={cn("flex-1 flex flex-col bg-white overflow-hidden h-full min-w-0 relative z-10", (!isResizing && !isMobile) && "transition-all duration-300", (!showDetail) && "hidden")}>
         {selectedSnippet ? (
           <>
             <header className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-20 shadow-sm shrink-0">
