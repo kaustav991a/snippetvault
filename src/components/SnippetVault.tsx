@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical, X } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical, X, Eye } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -401,6 +401,10 @@ export default function SnippetVault() {
                     <Code2 className="h-4 w-4" />
                     Code
                   </TabsTrigger>
+                  <TabsTrigger value="preview" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </TabsTrigger>
                   <TabsTrigger value="ai" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
                     <Wand2 className="h-4 w-4" />
                     AI Insights
@@ -416,6 +420,15 @@ export default function SnippetVault() {
                     </pre>
                   </div>
                 </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="preview" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden bg-white">
+                <iframe
+                  srcDoc={selectedSnippet.code}
+                  className="w-full h-full border-none"
+                  title="Snippet Preview"
+                  sandbox="allow-scripts"
+                />
               </TabsContent>
 
               <TabsContent value="ai" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background overflow-hidden">

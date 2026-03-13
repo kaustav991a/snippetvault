@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Plus, Wand2, Loader2 } from "lucide-react"
+import { Plus, Wand2, Loader2, Code2, Eye } from "lucide-react"
 import { suggestSnippetTitle } from "@/ai/flows/ai-suggest-snippet-title"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore } from "@/firebase"
 import { collection, addDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function AddSnippetDialog() {
   const [mounted, setMounted] = useState(false)
@@ -98,11 +99,11 @@ export function AddSnippetDialog() {
       <DialogTrigger asChild>
         {triggerButton}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-headline font-semibold text-primary">New Code Snippet</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4 flex-1 flex flex-col overflow-hidden">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="title" className="text-sm font-medium">Description / Title</Label>
@@ -127,18 +128,39 @@ export function AddSnippetDialog() {
               className="font-body"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="code" className="text-sm font-medium">Code Snippet</Label>
-            <Textarea
-              id="code"
-              placeholder="IT can be HTML/CSS/JS..or can be all in one .."
-              className="font-code min-h-[300px] bg-secondary/30 resize-none"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
+          
+          <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="edit" className="gap-2">
+                <Code2 className="h-4 w-4" />
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="edit" className="flex-1 mt-4">
+              <Textarea
+                id="code"
+                placeholder="Paste your HTML/CSS/JS code here..."
+                className="font-code min-h-[300px] h-full bg-secondary/30 resize-none"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </TabsContent>
+            <TabsContent value="preview" className="flex-1 mt-4 border rounded-md overflow-hidden bg-white">
+              <iframe
+                srcDoc={code || "<p class='p-4 text-muted-foreground italic text-center'>Start typing code to see a preview...</p>"}
+                className="w-full h-full border-none"
+                title="Preview"
+                sandbox="allow-scripts"
+              />
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-3 pt-2 shrink-0">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" className="bg-accent hover:bg-accent/90">Save Snippet</Button>
           </div>

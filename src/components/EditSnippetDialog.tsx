@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Pencil, Wand2, Loader2 } from "lucide-react"
+import { Pencil, Wand2, Loader2, Code2, Eye } from "lucide-react"
 import { suggestSnippetTitle } from "@/ai/flows/ai-suggest-snippet-title"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore } from "@/firebase"
@@ -14,6 +14,7 @@ import { doc, updateDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Snippet } from "@/lib/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface EditSnippetDialogProps {
   snippet: Snippet
@@ -97,11 +98,11 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-headline font-semibold text-primary">Edit Snippet</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4 flex-1 flex flex-col overflow-hidden">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="edit-title" className="text-sm font-medium">Description / Title</Label>
@@ -126,18 +127,39 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
               className="font-body"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-code" className="text-sm font-medium">Code Snippet</Label>
-            <Textarea
-              id="edit-code"
-              placeholder="Paste your HTML here..."
-              className="font-code min-h-[300px] bg-secondary/30 resize-none"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
+
+          <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="edit" className="gap-2">
+                <Code2 className="h-4 w-4" />
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="edit" className="flex-1 mt-4">
+              <Textarea
+                id="edit-code"
+                placeholder="Paste your HTML here..."
+                className="font-code min-h-[300px] h-full bg-secondary/30 resize-none"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </TabsContent>
+            <TabsContent value="preview" className="flex-1 mt-4 border rounded-md overflow-hidden bg-white">
+              <iframe
+                srcDoc={code}
+                className="w-full h-full border-none"
+                title="Preview"
+                sandbox="allow-scripts"
+              />
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-3 pt-2 shrink-0">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" className="bg-accent hover:bg-accent/90">Save Changes</Button>
           </div>
