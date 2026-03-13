@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, ChevronLeft, PanelLeftClose, PanelLeft, GripVertical, X, Eye } from "lucide-react"
+import { Search, Code2, Copy, Trash2, FileCode, Check, Loader2, Wand2, BookOpen, Sparkles, PanelLeftClose, PanelLeft, GripVertical, X } from "lucide-react"
 import { Snippet } from "@/lib/types"
 import { AddSnippetDialog } from "./AddSnippetDialog"
 import { EditSnippetDialog } from "./EditSnippetDialog"
@@ -12,51 +12,13 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, deleteDoc, doc } from "firebase/firestore"
+import { collection, deleteDoc, doc, updateDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { explainSnippet } from "@/ai/flows/ai-explain-snippet"
 import { refactorSnippet } from "@/ai/flows/ai-refactor-snippet"
 import { useIsMobile } from "@/hooks/use-mobile"
-
-/**
- * Helper to wrap raw snippet code in a basic HTML boilerplate for better previewing.
- * Includes jQuery as it's common in these types of snippets.
- */
-const getPreviewDoc = (code: string) => {
-  if (!code) return "";
-  const lowerCode = code.toLowerCase();
-  
-  // If it's already a full HTML document, just return it
-  if (lowerCode.includes('<html') || lowerCode.includes('<!doctype')) {
-    return code;
-  }
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <style>
-          body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 1.5rem; 
-            background-color: white; 
-            color: #1a1a1a;
-            line-height: 1.5;
-          }
-        </style>
-      </head>
-      <body>
-        ${code}
-      </body>
-    </html>
-  `;
-};
 
 export default function SnippetVault() {
   const [mounted, setMounted] = useState(false)
@@ -130,7 +92,6 @@ export default function SnippetVault() {
     const newWidth = e.clientX - sidebarWidth
     
     const minListWidth = 250
-    // Ensure detail panel has at least 350px
     const maxListWidth = window.innerWidth - sidebarWidth - 350
     
     if (newWidth >= minListWidth && newWidth <= maxListWidth) {
@@ -203,14 +164,8 @@ export default function SnippetVault() {
     setIsRefactoring(true)
     try {
       const result = await refactorSnippet({ htmlCode: selectedSnippet.code })
-      
-      // Update the snippet in Firestore with the refactored code
       const snippetRef = doc(db, "snippets", selectedSnippet.id)
       const updateData = { code: result.refactoredCode }
-      
-      deleteDoc(snippetRef) // Using delete and then add or update is possible, but we should just updateDoc
-      // Actually let's just update it so the user sees the change immediately
-      const { updateDoc } = await import('firebase/firestore')
       await updateDoc(snippetRef, updateData)
 
       toast({
@@ -269,7 +224,7 @@ export default function SnippetVault() {
               <span className="font-headline font-bold text-primary tracking-tight text-xl text-nowrap">Vault</span>
             </div>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(false)}>
-              <ChevronLeft className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
 
@@ -452,10 +407,6 @@ export default function SnippetVault() {
                     <Code2 className="h-4 w-4" />
                     Code
                   </TabsTrigger>
-                  <TabsTrigger value="preview" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
-                    <Eye className="h-4 w-4" />
-                    Preview
-                  </TabsTrigger>
                   <TabsTrigger value="ai" className="data-[state=active]:bg-white data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-full gap-2 text-xs md:text-sm">
                     <Wand2 className="h-4 w-4" />
                     AI Insights
@@ -471,15 +422,6 @@ export default function SnippetVault() {
                     </pre>
                   </div>
                 </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="preview" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 overflow-hidden bg-white">
-                <iframe
-                  srcDoc={getPreviewDoc(selectedSnippet.code)}
-                  className="w-full h-full border-none"
-                  title="Snippet Preview"
-                  sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
-                />
               </TabsContent>
 
               <TabsContent value="ai" className="flex-1 m-0 p-0 outline-none data-[state=active]:flex data-[state=active]:flex-col min-h-0 bg-background overflow-hidden">

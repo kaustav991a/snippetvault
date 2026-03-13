@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Pencil, Wand2, Loader2, Code2, Eye } from "lucide-react"
+import { Pencil, Wand2, Loader2 } from "lucide-react"
 import { suggestSnippetTitle } from "@/ai/flows/ai-suggest-snippet-title"
 import { useToast } from "@/hooks/use-toast"
 import { useFirestore } from "@/firebase"
@@ -14,36 +14,6 @@ import { doc, updateDoc } from "firebase/firestore"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
 import { Snippet } from "@/lib/types"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-const getPreviewDoc = (code: string) => {
-  if (!code) return "";
-  const lowerCode = code.toLowerCase();
-  if (lowerCode.includes('<html') || lowerCode.includes('<!doctype')) {
-    return code;
-  }
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <style>
-          body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 1rem; 
-            background-color: white; 
-          }
-        </style>
-      </head>
-      <body>
-        ${code}
-      </body>
-    </html>
-  `;
-};
 
 interface EditSnippetDialogProps {
   snippet: Snippet
@@ -57,7 +27,6 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
   const db = useFirestore()
   const { toast } = useToast()
 
-  // Update internal state when snippet prop changes
   useEffect(() => {
     setTitle(snippet.title)
     setCode(snippet.code)
@@ -157,39 +126,20 @@ export function EditSnippetDialog({ snippet }: EditSnippetDialogProps) {
             />
           </div>
 
-          <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="edit" className="gap-2">
-                <Code2 className="h-4 w-4" />
-                Editor
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="gap-2">
-                <Eye className="h-4 w-4" />
-                Preview
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="edit" className="flex-1 mt-4">
-              <div className="text-xs text-muted-foreground mb-2">
-                Tip: Ensure CSS is in &lt;style&gt; and JS in &lt;script&gt; tags.
-              </div>
-              <Textarea
-                id="edit-code"
-                placeholder="Paste your HTML here..."
-                className="font-code min-h-[300px] h-full bg-secondary/30 resize-none"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                required
-              />
-            </TabsContent>
-            <TabsContent value="preview" className="flex-1 mt-4 border rounded-md overflow-hidden bg-white">
-              <iframe
-                srcDoc={getPreviewDoc(code)}
-                className="w-full h-full border-none"
-                title="Preview"
-                sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
-              />
-            </TabsContent>
-          </Tabs>
+          <div className="flex-1 flex flex-col min-h-0 space-y-2">
+            <Label htmlFor="edit-code" className="text-sm font-medium">HTML/CSS/JS Code</Label>
+            <div className="text-xs text-muted-foreground mb-2">
+              Tip: Ensure CSS is in &lt;style&gt; and JS in &lt;script&gt; tags.
+            </div>
+            <Textarea
+              id="edit-code"
+              placeholder="Paste your code here..."
+              className="font-code flex-1 bg-secondary/30 resize-none min-h-[300px]"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+            />
+          </div>
 
           <div className="flex justify-end gap-3 pt-2 shrink-0">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
