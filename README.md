@@ -1,6 +1,10 @@
+
 # HTML SnippetVault
 
 A searchable repository for frequently used HTML code snippets, featuring AI-powered title suggestions, explanations, and refactoring.
+
+## Security Note: API Keys
+This project uses environment variables (`.env`) to store sensitive API keys. **Never** commit your real `.env` file to GitHub. A template is provided in the root directory.
 
 ## Tech Stack
 - **Framework**: Next.js 15 (App Router)
@@ -10,7 +14,7 @@ A searchable repository for frequently used HTML code snippets, featuring AI-pow
 
 ## Deployment Guide: Firebase App Hosting (Recommended)
 
-Since this app uses **Next.js Server Actions** for AI features, it requires a server-side environment. **Firebase App Hosting** is the easiest way to deploy it.
+Since this app uses **Next.js Server Actions** for AI features, it requires a server-side environment. 
 
 ### Step 1: Push to GitHub
 1. Create a new repository on [GitHub](https://github.com/new).
@@ -33,23 +37,16 @@ Since this app uses **Next.js Server Actions** for AI features, it requires a se
 3. In the left sidebar, click on **App Hosting**.
 4. Click **Get Started** and connect your GitHub account.
 5. Select the repository you just pushed.
-6. Follow the prompts to create the backend. Firebase will automatically detect Next.js and start the build.
 
-### Step 3: Configure Environment Variables
-1. Once the App Hosting backend is created, go to the **Settings** tab of your App Hosting backend in the Firebase console.
+### Step 3: Configure Environment Variables (CRITICAL)
+1. In the Firebase console, go to the **Settings** tab of your App Hosting backend.
 2. Add a new Environment Variable:
    - **Key**: `GOOGLE_GENAI_API_KEY`
-   - **Value**: `AIzaSyBL3o4sajWXPSI82lEN-rkZF69zfrRJGGs` (or your preferred Gemini API key).
+   - **Value**: [Your New Gemini API Key from Google AI Studio]
 3. Trigger a new rollout to apply the changes.
 
----
-
-## Why FTP/Static Hosting won't work for AI
-This app uses "Server Actions" to communicate with the Gemini AI models. Traditional FTP hosting only serves static HTML/JS files and cannot run the server-side code needed for AI. If you deploy via FTP, the database will work, but the **Explain**, **Refactor**, and **Suggest Title** buttons will fail.
-
 ## Development
-To run the app locally:
+To run the app locally, ensure your `.env` file contains a valid `GOOGLE_GENAI_API_KEY`:
 ```bash
 npm run dev
 ```
-# SnippetVault
